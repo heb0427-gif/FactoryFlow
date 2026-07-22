@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="FactoryFlow.vcxproj" Id="3e7cc01e-54dd-4172-8e43-3bad0692a9b6" />
+</Solution>

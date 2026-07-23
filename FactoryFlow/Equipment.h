@@ -13,6 +13,7 @@ private :
 	std::string id;
 	std::string name;
 	EquipmentStatus status;
+	bool isValidStatusTransition(EquipmentStatus nextStatus) const;
 
 public :
 	Equipment(const std::string& id, const std::string& name); // »ı¼ºÀÚ

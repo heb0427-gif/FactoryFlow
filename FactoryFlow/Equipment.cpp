@@ -20,10 +20,22 @@ EquipmentStatus Equipment::getStatus() const {
 }
 
 bool Equipment::changeStatus(EquipmentStatus nextStatus) {
-	if (status == nextStatus) return false;
+	if (!isValidStatusTransition(nextStatus)) return false;
+
+	status = nextStatus;
+	return true;
+}
+
+bool Equipment::isValidStatusTransition(EquipmentStatus nextStatus) const {
+	if (status == nextStatus) return false; // 동일 상태로 변경 불가
+	if ((status == EquipmentStatus::STOPPED) && (nextStatus == EquipmentStatus::PAUSED))
+		return false; // STOPPED -> PAUSED 불가
+	if ((status == EquipmentStatus::STOPPED) && (nextStatus == EquipmentStatus::ERROR))
+		return false; // STOPPED -> ERROR 불가
 	if ((status == EquipmentStatus::ERROR) && (nextStatus == EquipmentStatus::RUNNING))
 		return false; // ERROR -> RUNNING 불가
-	status = nextStatus;
+	if ((status == EquipmentStatus::ERROR) && (nextStatus == EquipmentStatus::PAUSED))
+		return false; // ERROR -> PAUSED 불가
 	return true;
 }
 

@@ -8,5 +8,12 @@ int main() {
 	cout << "Machine Name: " << equipment.getName() << endl;
 	cout << "Machine Status: " << equipmentStatusToString(equipment.getStatus()) << endl;
 	
+	cout << equipment.changeStatus(EquipmentStatus::RUNNING) << endl;
+	cout << equipment.changeStatus(EquipmentStatus::PAUSED) << endl;
+	cout << equipment.changeStatus(EquipmentStatus::ERROR) << endl;
+	cout << equipment.changeStatus(EquipmentStatus::RUNNING) << endl;
+	cout << equipment.changeStatus(EquipmentStatus::STOPPED) << endl;
+
+
 	return 0;
 }

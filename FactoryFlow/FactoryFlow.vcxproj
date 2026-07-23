@@ -139,7 +139,15 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Equipment.cpp" />
+    <ClCompile Include="EquipmentMenu.cpp" />
     <ClCompile Include="FactoryFlow.cpp" />
+    <ClCompile Include="FactorySystem.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Equipment.h" />
+    <ClInclude Include="EquipmentMenu.h" />
+    <ClInclude Include="FactorySystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -28,3 +28,17 @@ const vector<Equipment>& FactorySystem::getEquipments() const {
 bool FactorySystem::isEquipmentEmpty() const {
 	return equipments.empty();
 }
+
+const Equipment* FactorySystem::findEquipment(const std::string& id) const {
+	int equipmentIndex = findEquipmentIndex(id);
+
+	if (equipmentIndex == -1) return nullptr;
+	return &equipments[equipmentIndex];  // 주소를 얻어야 해서 & 붙여줌
+}
+
+bool FactorySystem::changeEquipmentStatus(const std::string& id, EquipmentStatus nextStatus) {
+	int equipmentIndex = findEquipmentIndex(id);
+	
+	if (equipmentIndex == -1) return false;
+	return equipments[equipmentIndex].changeStatus(nextStatus);
+}

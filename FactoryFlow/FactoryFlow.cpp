@@ -1,19 +1,12 @@
 #include <iostream>
 #include "Equipment.h"
+#include "FactorySystem.h"
 using namespace std;
 
 int main() {
-	Equipment equipment("M01", "Machine 1");
-	cout << "Machine ID: " << equipment.getId() << endl;
-	cout << "Machine Name: " << equipment.getName() << endl;
-	cout << "Machine Status: " << equipmentStatusToString(equipment.getStatus()) << endl;
-	
-	cout << equipment.changeStatus(EquipmentStatus::RUNNING) << endl;
-	cout << equipment.changeStatus(EquipmentStatus::PAUSED) << endl;
-	cout << equipment.changeStatus(EquipmentStatus::ERROR) << endl;
-	cout << equipment.changeStatus(EquipmentStatus::RUNNING) << endl;
-	cout << equipment.changeStatus(EquipmentStatus::STOPPED) << endl;
-
-
+	FactorySystem system;  // 벡터 멤버변수가 있음
+	cout << system.registerEquipment("M01", "equipment1") << endl;
+	cout << system.registerEquipment("M02", "equipment2") << endl;
+	cout << system.registerEquipment("M01", "equipment3") << endl;
 	return 0;
 }

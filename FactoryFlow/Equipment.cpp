@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Equipment.h"
 using namespace std;
 
@@ -7,18 +6,9 @@ Equipment::Equipment(const string& id, const string& name)
 	: id(id), name(name), status(EquipmentStatus::STOPPED) { }  // 스탑 상태로 초기화
 
 // Getter 메서드 정의
-const string& Equipment::getId() const {
-	return id;
-}
-
-const string& Equipment::getName() const {
-	return name;
-}
-
-EquipmentStatus Equipment::getStatus() const {
-	return status;
-}
-
+const string& Equipment::getId() const { return id; }
+const string& Equipment::getName() const { return name; }
+EquipmentStatus Equipment::getStatus() const { return status; }
 bool Equipment::changeStatus(EquipmentStatus nextStatus) {
 	if (!isValidStatusTransition(nextStatus)) return false;
 

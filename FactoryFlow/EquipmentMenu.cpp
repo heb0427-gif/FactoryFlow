@@ -15,20 +15,20 @@ void EquipmentMenu::printMenu() const {
 	cout << "2. View All Equipments\n";
 	cout << "3. View Equipment Details\n";
 	cout << "4. Change Equipment Status\n";
-	cout << "0. Exit\n";
+	cout << "0. Exit\n\n";
 }
 
 void EquipmentMenu::printEquipment(const Equipment& equipment) const {
 	cout << "ID: " << equipment.getId() << "\n";
 	cout << "Name: " << equipment.getName() << "\n";
-	cout << "Status: " << equipmentStatusToString(equipment.getStatus()) << "\n";
+	cout << "Status: " << equipmentStatusToString(equipment.getStatus()) << "\n\n";
 }
 
 void EquipmentMenu::handleDisplayAllEquipments() const {
 	const vector<Equipment>& equipments = system.getEquipments(); // 
 
 	if (equipments.empty()) {
-		cout << "There're no registered equipments.\n";
+		cout << "There're no registered equipments.\n\n";
 		return;
 	}
 
@@ -44,7 +44,7 @@ void EquipmentMenu::handleDisplayEquipment() const {
 	const Equipment* equipmentPtr = system.findEquipment(id);
 
 	if (equipmentPtr == nullptr) {
-		cout << "Equipment not found.\n";
+		cout << "Equipment not found.\n\n";
 		return;
 	}
 
@@ -64,10 +64,10 @@ void EquipmentMenu::handleRegisterEquipment() {
 	getline(cin, registerName);
 
 	if (!system.registerEquipment(registerID, registerName)) {
-		cout << "Unable to register the equipment. Please check the ID and name.\n";
+		cout << "Unable to register the equipment. Please check the ID and name.\n\n";
 		return;
 	}
-	cout << "Equipment registered.\n";
+	cout << "Equipment registered.\n\n";
 }
 
 bool EquipmentMenu::convertMenuNumberToStatus(int menuNumber, EquipmentStatus& status) const {
@@ -140,10 +140,32 @@ int EquipmentMenu::readInteger(const string& message) const {
 		if (cin >> number) {
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			return number;
-			
 		}
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		cout << "Error! Enter an Integer.\n";
+		cout << "Error! Enter an Integer.\n\n";
+	}
+}
+
+void EquipmentMenu::run() {
+	while (true) {
+		printMenu();
+
+		int  menuNumber = readInteger("Select menu: ");
+		
+		switch (menuNumber) {
+		case 1 :
+			handleRegisterEquipment(); break;
+		case 2 :
+			handleDisplayAllEquipments(); break;
+		case 3 :
+			handleDisplayEquipment(); break;
+		case 4 :
+			handleChangeEquipmentStatus(); break;
+		case 0 :
+			return;
+		default :
+			cout << "Invalid menu number! Enter a number from 0 to 4.\n\n";
+		}
 	}
 }

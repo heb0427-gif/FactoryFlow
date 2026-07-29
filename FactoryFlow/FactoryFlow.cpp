@@ -4,9 +4,8 @@
 using namespace std;
 
 int main() {
-	FactorySystem system;  // 벡터 멤버변수가 있음
+	FactorySystem system;
 	EquipmentMenu menu(system);
-
 	menu.run();
 
 	return 0;

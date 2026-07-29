@@ -1,6 +1,7 @@
 #include "EquipmentMenu.h"
 #include "FactorySystem.h"
 #include <iostream>
+#include <limits>
 using namespace std;
 
 // 생성자
@@ -130,3 +131,19 @@ void EquipmentMenu::handleChangeEquipmentStatus() {
 	cout << "Equipment status changed to " << equipmentStatusToString(nextStatus) << "\n";
 }
 
+int EquipmentMenu::readInteger(const string& message) const {
+	int number;
+
+	while (true) {
+		cout << message;
+		
+		if (cin >> number) {
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			return number;
+			
+		}
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "Error! Enter an Integer.\n";
+	}
+}

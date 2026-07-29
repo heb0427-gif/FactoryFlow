@@ -112,3 +112,8 @@
 - 멀티스레드
 - PostgreSQL 연동
 - REST API 구현
+
+## 12. Version History
+
+v0.1.0
+- Equipment Management

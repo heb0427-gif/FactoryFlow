@@ -1,5 +1,6 @@
 #include "EquipmentMenu.h"
 #include "FactorySystem.h"
+#include "FactoryFlowMenu.h"
 #include <iostream>
 #include <limits>
 using namespace std;
@@ -9,13 +10,13 @@ EquipmentMenu::EquipmentMenu(FactorySystem& system) : system(system) {}
 
 void EquipmentMenu::printMenu() const {
 	cout << "================================\n";
-	cout << "FactoryFlow v0.1\n";
+	cout << "	FactoryFlow v0.1\n";
 	cout << "================================\n";
 	cout << "1. Register Equipment\n";
 	cout << "2. View All Equipments\n";
 	cout << "3. View Equipment Details\n";
 	cout << "4. Change Equipment Status\n";
-	cout << "0. Exit\n\n";
+	cout << "0. Back\n\n";
 }
 
 void EquipmentMenu::printEquipment(const Equipment& equipment) const {
@@ -113,8 +114,7 @@ void EquipmentMenu::handleChangeEquipmentStatus() {
 	cout << "3. PAUSED\n";
 	cout << "4. ERROR\n\n";
 
-	cout << "Status to change: ";
-	cin >> statusNumberToChange;
+	statusNumberToChange = readInteger ( "Status to change: " );
 
 	EquipmentStatus nextStatus;
 
@@ -149,7 +149,7 @@ int EquipmentMenu::readInteger(const string& message) const {
 
 void EquipmentMenu::run() {
 	while (true) {
-		printMenu();
+		EquipmentMenu::printMenu();
 
 		int  menuNumber = readInteger("Select menu: ");
 		

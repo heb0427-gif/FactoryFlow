@@ -5,8 +5,8 @@
 class EquipmentMenu {
 private:
 	/* EquipmentMenu가 FactorySystem을 복사해
-	별도 시스템을 만드는 것이 아니라, main()에서 생성한
-	실제 시스템을 함께 사용하기 위해 참조로 받는다. */
+   별도의 시스템을 만드는 것이 아니라 main()에서 생성한
+   실제 시스템을 함께 사용하기 위해 참조로 받는다. */
 	FactorySystem& system;
 
 	void printMenu() const;

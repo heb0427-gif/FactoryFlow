@@ -143,12 +143,18 @@
     <ClCompile Include="Equipment.cpp" />
     <ClCompile Include="EquipmentMenu.cpp" />
     <ClCompile Include="FactoryFlow.cpp" />
+    <ClCompile Include="FactoryFlowMenu.cpp" />
     <ClCompile Include="FactorySystem.cpp" />
+    <ClCompile Include="WorkOrder.cpp" />
+    <ClCompile Include="WorkOrderMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Equipment.h" />
     <ClInclude Include="EquipmentMenu.h" />
+    <ClInclude Include="FactoryFlowMenu.h" />
     <ClInclude Include="FactorySystem.h" />
+    <ClInclude Include="WorkOrder.h" />
+    <ClInclude Include="WorkOrderMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

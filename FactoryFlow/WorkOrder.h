@@ -34,6 +34,13 @@ public :
 	const std::string& getAssignedEquipmentId ( ) const;
 	WorkOrderStatus getStatus ( ) const;
 	bool hasAssignedEquipment ( ) const;
+
+	bool assignEquipment (const std::string& equipmentId );
+	bool start ( );
+	bool pause ( );
+	bool resume ( );
+	bool complete ( );
+	bool cancel ( );
 };
 
 std::string workOrderStatusToString ( WorkOrderStatus status );

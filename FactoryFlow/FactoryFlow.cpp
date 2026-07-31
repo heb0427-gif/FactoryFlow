@@ -7,7 +7,9 @@ using namespace std;
 
 int main() {
 	WorkOrder workOrder ( "WO001" , "PART-A" , 100 , WorkOrderPriority::HIGH );
-	cout << workOrder.hasAssignedEquipment ( );
-	cout << workOrderStatusToString ( workOrder.getStatus ( ) );
+	cout << workOrder.hasAssignedEquipment ( ) << endl;
+	cout << workOrderStatusToString ( workOrder.getStatus ( ) ) << endl;
+	cout << workOrder.start ( ) << endl;
+
 	return 0;
 }

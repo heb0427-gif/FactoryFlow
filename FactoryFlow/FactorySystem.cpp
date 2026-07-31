@@ -9,6 +9,13 @@ int FactorySystem::findEquipmentIndex(const std::string& id) const {
 	return -1;
 }
 
+int FactorySystem::findWorkOrderIndex ( const std::string& id ) const {
+	for ( int i = 0; i < workOrders.size ( ); i++ ) {
+		if ( workOrders[ i ].getId ( ) == id ) return i;
+	}
+	return -1;
+}
+
 bool FactorySystem::registerEquipment(const std::string& id, const std::string& name) {
 	//equipments에 push_back 한다.
 
@@ -41,4 +48,33 @@ bool FactorySystem::changeEquipmentStatus(const std::string& id, EquipmentStatus
 	
 	if (equipmentIndex == -1) return false;
 	return equipments[equipmentIndex].changeStatus(nextStatus);
+}
+
+bool FactorySystem::createWorkOrder ( const std::string& id , 
+	const std::string& productCode , int targetQuantity , 
+	WorkOrderPriority priority ) {
+
+	if ( ( id.empty() ) || ( productCode.empty() ) || ( targetQuantity <= 0 ) ||
+		( findWorkOrderIndex(id) != -1 ) ) return false;
+
+	workOrders.push_back(WorkOrder(id , productCode , targetQuantity, 
+		priority));
+	
+	return true;
+}
+
+const vector<WorkOrder>& FactorySystem::getWorkOrders() const {
+	return workOrders;
+}
+
+const WorkOrder* FactorySystem::findWorkOrder(const std::string& id) const {
+	int workOrderIndex = findWorkOrderIndex ( id );
+
+	if ( workOrderIndex == -1 ) return nullptr;
+
+	return &workOrders[workOrderIndex];
+}
+
+const bool FactorySystem::isWorkOrderEmpty ( ) const {
+	return workOrders.empty ( );
 }

@@ -17,12 +17,11 @@ bool WorkOrder::hasAssignedEquipment ( ) const {
 	return !assignedEquipmentId.empty();
 }
 
-bool WorkOrder::assignEquipment ( const std::string& equipmentId ) {
-	if ( status != WorkOrderStatus::WAITING ) { // WAITING 상태에서만 설비 등록 가능
-		return false;
-	}
+bool WorkOrder::assignEquipment(const std::string& equipmentId) {
+	if (status != WorkOrderStatus::WAITING) { // WAITING 상태에서만 설비 등록 가능
+		return false; }
 
-	if ( equipmentId.empty() ) return false;
+	if (equipmentId.empty()) return false;
 
 	assignedEquipmentId = equipmentId;
 	status = WorkOrderStatus::READY;

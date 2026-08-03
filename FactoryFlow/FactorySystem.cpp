@@ -1,5 +1,6 @@
 #include <vector>
 #include "FactorySystem.h"
+#include "WorkOrder.h"
 using namespace std;
 
 int FactorySystem::findEquipmentIndex(const std::string& id) const {
@@ -32,9 +33,7 @@ const vector<Equipment>& FactorySystem::getEquipments() const {
 	return equipments; // Equipment 객체들이 저장된 벡터를 읽기 전용 참조로 반환
 }
 
-bool FactorySystem::isEquipmentEmpty() const {
-	return equipments.empty();
-}
+bool FactorySystem::isEquipmentEmpty() const {return equipments.empty();}
 
 const Equipment* FactorySystem::findEquipment(const std::string& id) const {
 	int equipmentIndex = findEquipmentIndex(id);
@@ -67,14 +66,58 @@ const vector<WorkOrder>& FactorySystem::getWorkOrders() const {
 	return workOrders;
 }
 
-const WorkOrder* FactorySystem::findWorkOrder(const std::string& id) const {
-	int workOrderIndex = findWorkOrderIndex ( id );
+const WorkOrder* FactorySystem::findWorkOrder(const string& id) const {
+	int workOrderIndex = findWorkOrderIndex (id);
 
 	if ( workOrderIndex == -1 ) return nullptr;
 
 	return &workOrders[workOrderIndex];
 }
 
-const bool FactorySystem::isWorkOrderEmpty ( ) const {
-	return workOrders.empty ( );
+WorkOrder* FactorySystem::findWorkOrder(const string& id) {
+	int workOrderIndex = findWorkOrderIndex(id);
+
+	if (workOrderIndex == -1) return nullptr;
+
+	return &workOrders[workOrderIndex];
+}
+
+bool FactorySystem::isWorkOrderEmpty ( ) const {
+	return workOrders.empty();
+}
+
+bool FactorySystem::isEquipmentAssigned ( const std::string& equipmentId ) const { // 
+	if (equipmentId.empty()) return false;
+
+	for ( int i = 0; i < workOrders.size ( ); i++ ) {
+
+		WorkOrderStatus status = workOrders[i].getStatus();
+
+		if ( (equipmentId == workOrders[i].getAssignedEquipmentId()) &&
+			((status == WorkOrderStatus::READY) || 
+			(status == WorkOrderStatus::RUNNING)||
+			((status == WorkOrderStatus::PAUSED)))) {
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool FactorySystem::assignEquipmentToWorkOrder(const std::string& workOrderId,
+	const std::string& equipmentId) {
+
+	// 전달된 작업지시 id와 설비 id가 공백
+	if ((workOrderId.empty()) || (equipmentId.empty())) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+	const Equipment* equipment = findEquipment(equipmentId);
+
+	if (workOrder == nullptr || equipment == nullptr ||
+		workOrder->getStatus() != WorkOrderStatus::WAITING ||
+		equipment->getStatus() != EquipmentStatus::STOPPED ||
+		isEquipmentAssigned(equipmentId)) return false;
+
+	return workOrder->assignEquipment(equipmentId);
 }

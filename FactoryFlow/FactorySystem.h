@@ -16,6 +16,7 @@ public:
 	bool registerEquipment(const std::string& id, const std::string& name);
 	const std::vector<Equipment>& getEquipments() const;
 	const Equipment* findEquipment(const std::string& id) const;  // ?대떦 id瑜?媛吏?媛앹껜??二쇱냼 諛섑솚
+	Equipment* findEquipment(const std::string& id);
 	bool changeEquipmentStatus(const std::string& id, EquipmentStatus nextStatus);
 	bool isEquipmentEmpty() const;
 
@@ -33,4 +34,10 @@ public:
 		const std::string& equipmentId );
 
 	bool isEquipmentAssigned ( const std::string& equipmentId ) const;
+
+	bool startWorkOrder(const std::string& workOrderId);
+	bool pauseWorkOrder(const std::string& workOrderId);
+	bool resumeWorkOrder(const std::string& workOrderId);
+	bool completeWorkOrder(const std::string& workOrderId);
+	bool cancelWorkOrder(const std::string& workOrderId);
 };

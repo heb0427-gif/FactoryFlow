@@ -5,164 +5,381 @@
 #include "WorkOrder.h"
 using namespace std;
 
-#include <iostream>
-#include "FactorySystem.h"
+void printWorkOrderAndEquipmentStatus(
+	const FactorySystem& system,
+	const string& workOrderId,
+	const string& equipmentId
+) {
+	const WorkOrder* workOrder = system.findWorkOrder(workOrderId);
+	const Equipment* equipment = system.findEquipment(equipmentId);
 
-using namespace std;
+	if (workOrder != nullptr) {
+		cout << "WorkOrder status: "
+			<< workOrderStatusToString(workOrder->getStatus())
+			<< '\n';
+	}
+
+	if (equipment != nullptr) {
+		cout << "Equipment status: "
+			<< equipmentStatusToString(equipment->getStatus())
+			<< '\n';
+	}
+}
+
 
 int main() {
-	cout << boolalpha;
 
-	// 1. 존재하는 WO001 + 존재하는 M01 -> 성공
-	{
-		FactorySystem system;
+		cout << boolalpha;
 
-		system.registerEquipment("M01", "Equipment 01");
-		system.createWorkOrder(
-			"WO001",
-			"PART-A",
-			100,
-			WorkOrderPriority::HIGH
-		);
+		// ==================================================
+		// 성공 테스트 1
+		// READY 작업 시작
+		// WorkOrder: READY -> RUNNING
+		// Equipment: STOPPED -> RUNNING
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Success Test 1] Start READY WorkOrder\n";
+			cout << "================================\n";
 
-		bool result =
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
 			system.assignEquipmentToWorkOrder("WO001", "M01");
 
-		cout << "[Test 1] Existing WO001 + Existing M01\n";
-		cout << "Expected: true\n";
-		cout << "Actual  : " << result << "\n\n";
-	}
+			bool result = system.startWorkOrder("WO001");
 
-	// 2. 존재하지 않는 WO999 + 존재하는 M01 -> 실패
-	{
-		FactorySystem system;
+			cout << "Expected result: true\n";
+			cout << "Actual result  : " << result << '\n';
 
-		system.registerEquipment("M01", "Equipment 01");
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
 
-		bool result =
-			system.assignEquipmentToWorkOrder("WO999", "M01");
+			cout << "Expected WorkOrder status: RUNNING\n";
+			cout << "Expected Equipment status: RUNNING\n\n";
+		}
 
-		cout << "[Test 2] Missing WO999 + Existing M01\n";
-		cout << "Expected: false\n";
-		cout << "Actual  : " << result << "\n\n";
-	}
+		// ==================================================
+		// 성공 테스트 2
+		// RUNNING 작업 일시정지
+		// WorkOrder: RUNNING -> PAUSED
+		// Equipment: RUNNING -> PAUSED
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Success Test 2] Pause RUNNING WorkOrder\n";
+			cout << "================================\n";
 
-	// 3. 존재하는 WO001 + 존재하지 않는 M99 -> 실패
-	{
-		FactorySystem system;
+			FactorySystem system;
 
-		system.createWorkOrder(
-			"WO001",
-			"PART-A",
-			100,
-			WorkOrderPriority::HIGH
-		);
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
 
-		bool result =
-			system.assignEquipmentToWorkOrder("WO001", "M99");
+			system.assignEquipmentToWorkOrder("WO001", "M01");
+			system.startWorkOrder("WO001");
 
-		cout << "[Test 3] Existing WO001 + Missing M99\n";
-		cout << "Expected: false\n";
-		cout << "Actual  : " << result << "\n\n";
-	}
+			bool result = system.pauseWorkOrder("WO001");
 
-	// 4. ERROR 상태 설비 배정 -> 실패
-	{
-		FactorySystem system;
+			cout << "Expected result: true\n";
+			cout << "Actual result  : " << result << '\n';
 
-		system.registerEquipment("M01", "Equipment 01");
-		system.createWorkOrder(
-			"WO001",
-			"PART-A",
-			100,
-			WorkOrderPriority::HIGH
-		);
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
 
-		// STOPPED -> ERROR는 허용되지 않으므로
-		// STOPPED -> RUNNING -> ERROR 순서로 변경
-		system.changeEquipmentStatus(
-			"M01",
-			EquipmentStatus::RUNNING
-		);
+			cout << "Expected WorkOrder status: PAUSED\n";
+			cout << "Expected Equipment status: PAUSED\n\n";
+		}
 
-		system.changeEquipmentStatus(
-			"M01",
-			EquipmentStatus::ERROR
-		);
+		// ==================================================
+		// 성공 테스트 3
+		// PAUSED 작업 재개
+		// WorkOrder: PAUSED -> RUNNING
+		// Equipment: PAUSED -> RUNNING
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Success Test 3] Resume PAUSED WorkOrder\n";
+			cout << "================================\n";
 
-		bool result =
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			system.assignEquipmentToWorkOrder("WO001", "M01");
+			system.startWorkOrder("WO001");
+			system.pauseWorkOrder("WO001");
+
+			bool result = system.resumeWorkOrder("WO001");
+
+			cout << "Expected result: true\n";
+			cout << "Actual result  : " << result << '\n';
+
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
+
+			cout << "Expected WorkOrder status: RUNNING\n";
+			cout << "Expected Equipment status: RUNNING\n\n";
+		}
+
+		// ==================================================
+		// 성공 테스트 4
+		// RUNNING 작업 완료
+		// WorkOrder: RUNNING -> COMPLETED
+		// Equipment: RUNNING -> STOPPED
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Success Test 4] Complete RUNNING WorkOrder\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			system.assignEquipmentToWorkOrder("WO001", "M01");
+			system.startWorkOrder("WO001");
+
+			bool result = system.completeWorkOrder("WO001");
+
+			cout << "Expected result: true\n";
+			cout << "Actual result  : " << result << '\n';
+
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
+
+			cout << "Expected WorkOrder status: COMPLETED\n";
+			cout << "Expected Equipment status: STOPPED\n\n";
+		}
+
+		// ==================================================
+		// 실패 테스트 1
+		// WAITING 작업 시작
+		// 설비가 배정되지 않았으므로 실패
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Failure Test 1] Start WAITING WorkOrder\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			bool result = system.startWorkOrder("WO001");
+
+			cout << "Expected result: false\n";
+			cout << "Actual result  : " << result << '\n';
+
+			const WorkOrder* workOrder =
+				system.findWorkOrder("WO001");
+
+			if (workOrder != nullptr) {
+				cout << "WorkOrder status: "
+					<< workOrderStatusToString(
+						workOrder->getStatus()
+					)
+					<< '\n';
+			}
+
+			cout << "Expected WorkOrder status: WAITING\n\n";
+		}
+
+		// ==================================================
+		// 실패 테스트 2
+		// 완료된 작업 다시 시작
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Failure Test 2] Restart COMPLETED WorkOrder\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			system.assignEquipmentToWorkOrder("WO001", "M01");
+			system.startWorkOrder("WO001");
+			system.completeWorkOrder("WO001");
+
+			bool result = system.startWorkOrder("WO001");
+
+			cout << "Expected result: false\n";
+			cout << "Actual result  : " << result << '\n';
+
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
+
+			cout << "Expected WorkOrder status: COMPLETED\n";
+			cout << "Expected Equipment status: STOPPED\n\n";
+		}
+
+		// ==================================================
+		// 실패 테스트 3
+		// 설비 상태가 STOPPED가 아닌 상태에서 작업 시작
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Failure Test 3] Start With Non-STOPPED Equipment\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			// 배정 시점에는 설비가 STOPPED여야 함
 			system.assignEquipmentToWorkOrder("WO001", "M01");
 
-		cout << "[Test 4] Assign ERROR Equipment M01\n";
-		cout << "Expected: false\n";
-		cout << "Actual  : " << result << "\n\n";
-	}
+			// 배정 후 설비 상태만 RUNNING으로 변경
+			system.changeEquipmentStatus(
+				"M01",
+				EquipmentStatus::RUNNING
+			);
 
-	// 5. 이미 다른 활성 작업지시에 배정된 설비 -> 실패
-	{
-		FactorySystem system;
+			bool result = system.startWorkOrder("WO001");
 
-		system.registerEquipment("M01", "Equipment 01");
+			cout << "Expected result: false\n";
+			cout << "Actual result  : " << result << '\n';
 
-		system.createWorkOrder(
-			"WO001",
-			"PART-A",
-			100,
-			WorkOrderPriority::HIGH
-		);
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
 
-		system.createWorkOrder(
-			"WO002",
-			"PART-B",
-			200,
-			WorkOrderPriority::NORMAL
-		);
+			cout << "Expected WorkOrder status: READY\n";
+			cout << "Expected Equipment status: RUNNING\n\n";
+		}
 
-		bool firstAssignment =
+		// ==================================================
+		// 실패 테스트 4
+		// 배정되지 않은 작업 일시정지
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Failure Test 4] Pause Unassigned WorkOrder\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
+			bool result = system.pauseWorkOrder("WO001");
+
+			cout << "Expected result: false\n";
+			cout << "Actual result  : " << result << '\n';
+
+			const WorkOrder* workOrder =
+				system.findWorkOrder("WO001");
+
+			if (workOrder != nullptr) {
+				cout << "WorkOrder status: "
+					<< workOrderStatusToString(
+						workOrder->getStatus()
+					)
+					<< '\n';
+			}
+
+			cout << "Expected WorkOrder status: WAITING\n\n";
+		}
+
+		// ==================================================
+		// 실패 테스트 5
+		// 완료된 작업 취소
+		// ==================================================
+		{
+			cout << "================================\n";
+			cout << "[Failure Test 5] Cancel COMPLETED WorkOrder\n";
+			cout << "================================\n";
+
+			FactorySystem system;
+
+			system.registerEquipment("M01", "Equipment 01");
+			system.createWorkOrder(
+				"WO001",
+				"PART-A",
+				100,
+				WorkOrderPriority::HIGH
+			);
+
 			system.assignEquipmentToWorkOrder("WO001", "M01");
+			system.startWorkOrder("WO001");
+			system.completeWorkOrder("WO001");
 
-		bool secondAssignment =
-			system.assignEquipmentToWorkOrder("WO002", "M01");
+			bool result = system.cancelWorkOrder("WO001");
 
-		cout << "[Test 5] Assign M01 To Two Active Work Orders\n";
-		cout << "First assignment expected: true\n";
-		cout << "First assignment actual  : "
-			<< firstAssignment << "\n";
+			cout << "Expected result: false\n";
+			cout << "Actual result  : " << result << '\n';
 
-		cout << "Second assignment expected: false\n";
-		cout << "Second assignment actual  : "
-			<< secondAssignment << "\n\n";
-	}
+			printWorkOrderAndEquipmentStatus(
+				system,
+				"WO001",
+				"M01"
+			);
 
-	// 6. 이미 READY 상태인 작업지시에 재배정 -> 실패
-	{
-		FactorySystem system;
+			cout << "Expected WorkOrder status: COMPLETED\n";
+			cout << "Expected Equipment status: STOPPED\n\n";
+		}
 
-		system.registerEquipment("M01", "Equipment 01");
-		system.registerEquipment("M02", "Equipment 02");
-
-		system.createWorkOrder(
-			"WO001",
-			"PART-A",
-			100,
-			WorkOrderPriority::HIGH
-		);
-
-		bool firstAssignment =
-			system.assignEquipmentToWorkOrder("WO001", "M01");
-
-		bool reassignment =
-			system.assignEquipmentToWorkOrder("WO001", "M02");
-
-		cout << "[Test 6] Reassign READY Work Order WO001\n";
-		cout << "First assignment expected: true\n";
-		cout << "First assignment actual  : "
-			<< firstAssignment << "\n";
-
-		cout << "Reassignment expected: false\n";
-		cout << "Reassignment actual  : "
-			<< reassignment << "\n\n";
-	}
-
-	return 0;
+		return 0;
 }

@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream>
 #include "FactorySystem.h"
 #include "WorkOrder.h"
 using namespace std;
@@ -36,6 +37,13 @@ const vector<Equipment>& FactorySystem::getEquipments() const {
 bool FactorySystem::isEquipmentEmpty() const {return equipments.empty();}
 
 const Equipment* FactorySystem::findEquipment(const std::string& id) const {
+	int equipmentIndex = findEquipmentIndex(id);
+
+	if (equipmentIndex == -1) return nullptr;
+	return &equipments[equipmentIndex];  // 주소를 넘겨주기 위해서 &를 붙여줌
+}
+
+Equipment* FactorySystem::findEquipment(const std::string& id) {
 	int equipmentIndex = findEquipmentIndex(id);
 
 	if (equipmentIndex == -1) return nullptr;
@@ -120,4 +128,285 @@ bool FactorySystem::assignEquipmentToWorkOrder(const std::string& workOrderId,
 		isEquipmentAssigned(equipmentId)) return false;
 
 	return workOrder->assignEquipment(equipmentId);
+}
+
+bool FactorySystem::startWorkOrder(const std::string& workOrderId) {
+
+	if (workOrderId.empty()) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+
+	if (workOrder == nullptr) {
+		cout << "workOrder is nullptr.\n\n";
+		return false;
+	}
+
+	if (!workOrder->hasAssignedEquipment()) {
+		cout << "workOrder has not Equipment.\n\n";
+		return false;
+	}
+	if (workOrder->getStatus() != WorkOrderStatus::READY) {
+		cout << "workOrder's status is not READY.\n\n";
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+	Equipment* equipment = findEquipment(assignedEquipmentId);
+
+	if (equipment == nullptr) {
+		cout << "equipment is nullptr.\n\n";
+		return false;
+	}
+
+	if (equipment->getStatus() != EquipmentStatus::STOPPED) {
+		cout << "equipment status is not STOPPED.\n\n";
+		return false;
+	}
+
+	// 설비 상태 변경
+	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) {
+		cout << "Failed to change equipment status.\n\n";
+		return false;
+	}
+
+	if (!workOrder->start()) { // 작업 지시 상태 변경
+		cout << "Failed to change work order status. Changed the equipment status from RUNNING to STOPPED.\n\n";
+		equipment->changeStatus(EquipmentStatus::STOPPED);
+		return false;
+	}
+
+	return true;
+}
+
+bool FactorySystem::pauseWorkOrder(const std::string& workOrderId) {
+	if (workOrderId.empty()) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+
+	if (workOrder == nullptr) {
+		cout << "workOrder is nullptr.\n\n";
+		return false;
+	}
+
+	if (!workOrder->hasAssignedEquipment()) {
+		cout << "workOrder has not Equipment.\n\n";
+		return false;
+	}
+	if (workOrder->getStatus() != WorkOrderStatus::RUNNING) {
+		cout << "workOrder's status is not RUNNING.\n\n";
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+	Equipment* equipment = findEquipment(assignedEquipmentId);
+
+	if (equipment == nullptr) {
+		cout << "equipment is nullptr.\n\n";
+		return false;
+	}
+
+	if (equipment->getStatus() != EquipmentStatus::RUNNING) {
+		cout << "equipment status is not RUNNING.\n\n";
+		return false;
+	}
+
+	// 설비 상태 변경
+	if (!equipment->changeStatus(EquipmentStatus::PAUSED)) {
+		cout << "Failed to change equipment status to PAUSED.\n\n";
+		return false;
+	}
+
+	if (!workOrder->pause()) { // 작업 지시 상태 변경
+		cout << "Failed to change work order status to pause. Changed the equipment status from PAUSED to RUNNING.\n\n";
+		equipment->changeStatus(EquipmentStatus::RUNNING);
+		return false;
+	}
+
+	return true;
+}
+
+bool FactorySystem::resumeWorkOrder(const std::string& workOrderId) {
+	if (workOrderId.empty()) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+
+	if (workOrder == nullptr) {
+		cout << "workOrder is nullptr.\n\n";
+		return false;
+	}
+
+	if (!workOrder->hasAssignedEquipment()) {
+		cout << "workOrder has not Equipment.\n\n";
+		return false;
+	}
+
+	if (workOrder->getStatus() != WorkOrderStatus::PAUSED) {
+		cout << "workOrder's status is not PAUSED.\n\n";
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+	Equipment* equipment = findEquipment(assignedEquipmentId);
+
+	if (equipment == nullptr) {
+		cout << "equipment is nullptr.\n\n";
+		return false;
+	}
+
+	if (equipment->getStatus() != EquipmentStatus::PAUSED) {
+		cout << "equipment status is not PAUSED.\n\n";
+		return false;
+	}
+
+	// 설비 상태 변경
+	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) {
+		cout << "Failed to change equipment status to RUNNING.\n\n";
+		return false;
+	}
+
+	if (!workOrder->resume()) { // 작업 지시 상태 변경
+		cout << "Failed to change work order status to RUNNING. Changed the equipment status from RUNNING to PAUSED.\n\n";
+		equipment->changeStatus(EquipmentStatus::PAUSED);
+		return false;
+	}
+
+	return true;
+}
+
+bool FactorySystem::completeWorkOrder(const std::string& workOrderId) {
+	if (workOrderId.empty()) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+
+	if (workOrder == nullptr) {
+		cout << "workOrder is nullptr.\n\n";
+		return false;
+	}
+
+	if (!workOrder->hasAssignedEquipment()) {
+		cout << "workOrder has not Equipment.\n\n";
+		return false;
+	}
+
+	if (workOrder->getStatus() != WorkOrderStatus::RUNNING) {
+		cout << "workOrder's status is not RUNNING.\n\n";
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+	Equipment* equipment = findEquipment(assignedEquipmentId);
+
+	if (equipment == nullptr) {
+		cout << "equipment is nullptr.\n\n";
+		return false;
+	}
+
+	if (equipment->getStatus() != EquipmentStatus::RUNNING) {
+		cout << "equipment status is not RUNNING.\n\n";
+		return false;
+	}
+
+	// 설비 상태 변경
+	if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
+		cout << "Failed to change equipment status to STOPPED.\n\n";
+		return false;
+	}
+
+	if (!workOrder->complete()) { // 작업 지시 상태 변경
+		cout << "Failed to change work order status to COMPLETED. Changed the equipment status from STOPPED to RUNNING.\n\n";
+		equipment->changeStatus(EquipmentStatus::RUNNING);
+		return false;
+	}
+
+	return true;
+}
+
+bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
+	if (workOrderId.empty()) return false;
+
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
+
+	if (workOrder == nullptr) {
+		cout << "workOrder is nullptr.\n\n";
+		return false;
+	}
+
+	if (!workOrder->hasAssignedEquipment()) { // 설비 배정 전이라면
+		cout << "workOrder has not Equipment. work order cancel.\n\n";
+
+		if (!workOrder->cancel()) { // 작업 지시 상태 변경
+			cout << "Failed to change work order status to CANCELLED.\n\n";
+			return false;
+		}
+
+		return true;
+	}
+
+	if ( (workOrder->getStatus() == WorkOrderStatus::COMPLETED) || 
+		(workOrder->getStatus() == WorkOrderStatus::CANCELLED) ) {
+		cout << "workOrder's status is COMPLETED or CANCELLED.\n\n";
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+	Equipment* equipment = findEquipment(assignedEquipmentId);
+
+	if (equipment == nullptr) {
+		cout << "equipment is nullptr.\n\n";
+		return false;
+	}
+
+	EquipmentStatus currentEquipmentStatus = equipment->getStatus();
+
+	// 설비 상태 변경
+	if (currentEquipmentStatus != EquipmentStatus::STOPPED) {
+		if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
+			cout << "Failed to change equipment status to STOPPED.\n\n";
+			return false;
+		}
+	}
+
+	if (!workOrder->cancel()) { // 작업 지시 상태 변경
+		cout << "Failed to change work order status to CANCELLED. Changed the equipment status to currentEquipmentStatus.\n\n";
+		
+		bool restoreSucceeded = true;
+
+		switch (currentEquipmentStatus) {
+		case EquipmentStatus::STOPPED:
+			// 원래부터 STOPPED였으므로 복구할 필요 없음
+			break;
+
+		case EquipmentStatus::RUNNING:
+			// STOPPED → RUNNING
+			restoreSucceeded =
+				equipment->changeStatus(EquipmentStatus::RUNNING);
+			break;
+
+		case EquipmentStatus::PAUSED:
+			// STOPPED → PAUSED는 불가능하므로
+			// STOPPED → RUNNING → PAUSED 순서로 복구
+			if (!equipment->changeStatus(EquipmentStatus::RUNNING)) {
+				restoreSucceeded = false;
+				break;
+			}
+
+			if (!equipment->changeStatus(EquipmentStatus::PAUSED)) {
+				restoreSucceeded = false;
+			}
+			break;
+
+		case EquipmentStatus::ERROR:
+			// 현재 상태 전이 규칙상 STOPPED → ERROR가 불가능하므로 복구 불가
+			restoreSucceeded = false;
+			break;
+		}
+
+		if (!restoreSucceeded) {
+			cout << "Failed to restore equipment status.\n\n";
+		}
+
+		return false;
+	}
+
+	return true;
 }

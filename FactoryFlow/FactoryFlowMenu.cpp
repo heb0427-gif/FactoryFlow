@@ -5,7 +5,7 @@
 using namespace std;
 
 FactoryFlowMenu::FactoryFlowMenu(FactorySystem& system)
-	: system(system), equipmentMenu(system) workOrderMenu(system) {}
+	: system(system), equipmentMenu(system), workOrderMenu(system) {}
 
 void FactoryFlowMenu::printMenu( ) const {
 	cout << "================================\n";

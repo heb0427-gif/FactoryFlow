@@ -151,10 +151,22 @@ void WorkOrderMenu::run() {
 			handleDisplayAllWorkOrders(); break;
 		case 3:
 			handleDisplayWorkOrder(); break;
+		case 4:
+			handleAssignEquipment(); break;
+		case 5:
+			handleStartWorkOrder(); break;
+		case 6:
+			handlePauseWorkOrder(); break;
+		case 7:
+			handleResumeWorkOrder(); break;
+		case 8:
+			handleCompleteWorkOrder(); break;
+		case 9:
+			handleCancelWorkOrder(); break;
 		case 0:
 			return;
 		default:
-			cout << "Invalid menu number! Enter a number from 0 to 3.\n\n";
+			cout << "Invalid menu number! Enter a number from 0 to 9.\n\n";
 		}
 	}
 }

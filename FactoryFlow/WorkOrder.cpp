@@ -5,7 +5,8 @@ using namespace std;
 // 생성자
 WorkOrder::WorkOrder ( const string& id , const string& productCode , int targetQuantity , WorkOrderPriority priority )
 	: id ( id ) , productCode ( productCode ) , targetQuantity ( targetQuantity ) ,
-	priority ( priority ) , status ( WorkOrderStatus::WAITING ) , assignedEquipmentId ( "" ) {}
+	priority ( priority ) , status ( WorkOrderStatus::WAITING ) , 
+	assignedEquipmentId ( "" ), producedQuantity(0), defectQuantity(0) {}
 
 const string& WorkOrder::getId ( ) const { return id; }
 const string& WorkOrder::getProductCode ( ) const { return productCode; }
@@ -60,6 +61,8 @@ bool WorkOrder::complete ( ) {
 		return false;
 	}
 
+	if (!isTargetReached()) return false;
+
 	status = WorkOrderStatus::COMPLETED;
 	return true;
 }
@@ -104,4 +107,59 @@ string workOrderPriorityToString ( WorkOrderPriority priority ) {
 	default:
 		return "UNKNOWN";
 	}
+}
+
+int WorkOrder::getProducedQuantity() const { 
+	return producedQuantity; 
+}
+
+int WorkOrder::getDefectQuantity() const {
+	return defectQuantity;
+}
+
+int WorkOrder::getPassQuantity() const {
+	return producedQuantity - defectQuantity;
+}
+
+int WorkOrder::getRemainingQuantity() const {
+	return targetQuantity - producedQuantity;
+}
+
+float WorkOrder::getProgressRate() const {
+	// 목표 수량 대비 생산 수량의 비율 백분율 반환
+
+	return (static_cast<float>(producedQuantity) / targetQuantity) * 100;
+}
+
+float WorkOrder::getDefectRate() const {
+	// 전체 생산량 대비 불량 수량 비율 백분율 반환
+
+	if (producedQuantity == 0) return 0.0;
+
+	return (static_cast<float>(defectQuantity) / producedQuantity) * 100;
+}
+
+bool WorkOrder::isTargetReached() const {
+	return producedQuantity == targetQuantity;
+}
+
+bool WorkOrder::canRecordProduction(int produced, int defects) const {
+	if (status != WorkOrderStatus::RUNNING) return false;
+	if (produced < 1) return false;
+	if (defects < 0) return false;
+	if (defects > produced) return false;
+	if ((produced + producedQuantity) > targetQuantity) return false;
+
+	return true;
+}
+
+bool WorkOrder::recordProduction(int produced, int defects) {
+	if (!canRecordProduction(produced, defects)) {
+		return false;
+	}
+
+	producedQuantity += produced;
+	defectQuantity += defects;
+
+	return true;
 }

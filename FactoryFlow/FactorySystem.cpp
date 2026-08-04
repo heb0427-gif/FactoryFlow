@@ -145,6 +145,7 @@ bool FactorySystem::startWorkOrder(const std::string& workOrderId) {
 		cout << "workOrder has not Equipment.\n\n";
 		return false;
 	}
+
 	if (workOrder->getStatus() != WorkOrderStatus::READY) {
 		cout << "workOrder's status is not READY.\n\n";
 		return false;

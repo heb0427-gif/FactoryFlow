@@ -1,10 +1,11 @@
 #include <iostream>
 #include "FactoryFlowMenu.h"
 #include "EquipmentMenu.h"
+#include "WorkOrderMenu.h"
 using namespace std;
 
 FactoryFlowMenu::FactoryFlowMenu(FactorySystem& system)
-	: system(system), equipmentMenu(system) {}
+	: system(system), equipmentMenu(system) workOrderMenu(system) {}
 
 void FactoryFlowMenu::printMenu( ) const {
 	cout << "================================\n";
@@ -42,8 +43,7 @@ void FactoryFlowMenu::run( ) {
 		case 1 :
 			equipmentMenu.run(); break;
 		case 2 :
-			cout << "Work order management is not implemented yet.\n\n";
-			break;
+			workOrderMenu.run(); break;
 		case 0 :
 			return;
 		default :

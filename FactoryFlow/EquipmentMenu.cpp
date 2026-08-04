@@ -39,7 +39,7 @@ void EquipmentMenu::handleDisplayAllEquipments() const {
 
 void EquipmentMenu::handleDisplayEquipment() const {
 	string id;
-	cout << "Enter ID: ";
+	cout << "Enter Equipment ID: ";
 	cin >> id;
 
 	const Equipment* equipmentPtr = system.findEquipment(id);
@@ -149,7 +149,7 @@ int EquipmentMenu::readInteger(const string& message) const {
 
 void EquipmentMenu::run() {
 	while (true) {
-		EquipmentMenu::printMenu();
+		printMenu();
 
 		int  menuNumber = readInteger("Select menu: ");
 		

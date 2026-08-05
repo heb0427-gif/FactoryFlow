@@ -13,17 +13,21 @@ Pass Quantity: 8
 class ProductionEvent { // 아직 처리되지 않은 생산실적 요청 한 건
 private:
 	int eventId;
-	static int nextEventId;
 	std::string workOrderId;
 	std::string equipmentId;
 	int producedQuantity;
 	int defectQuantity;
 
 public:
-	ProductionEvent(const std::string& workOrderId, 
+	ProductionEvent(int eventId, const std::string& workOrderId,
 		const std::string& equipmentId, int producedQuantity, 
 		int defectQuantity);
 
-
+	int getEventId() const;
+	const std::string& getWorkOrderId() const;
+	const std::string& getEquipmentId() const;
+	int getProducedQuantity() const;
+	int getDefectQuantity() const;
+	int getPassQuantity() const;
 };
 

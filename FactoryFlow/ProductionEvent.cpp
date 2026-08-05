@@ -1,16 +1,11 @@
 #include "ProductionEvent.h"
 using namespace std;
 
-int ProductionEvent::nextEventId = 1;
-
-ProductionEvent::ProductionEvent(const string& workOrderId,
+ProductionEvent::ProductionEvent(int eventId, const string& workOrderId,
 	const string& equipmentId, int producedQuantity,
 	int defectQuantity)
-	: eventId(nextEventId), workOrderId(workOrderId), equipmentId(equipmentId),
-	producedQuantity(producedQuantity), defectQuantity(defectQuantity) {
-
-	nextEventId++;
-}
+	: eventId(eventId), workOrderId(workOrderId), equipmentId(equipmentId),
+	producedQuantity(producedQuantity), defectQuantity(defectQuantity) {}
 
 int ProductionEvent::getEventId() const {
 	return eventId;

@@ -4,6 +4,8 @@
 #include "WorkOrder.h"
 using namespace std;
 
+FactorySystem::FactorySystem() : nextProductionEventId(1) {}
+
 int FactorySystem::findEquipmentIndex(const std::string& id) const {
 	for (int i = 0; i < equipments.size(); i++) {
 		if (equipments[i].getId() == id) return i;
@@ -411,3 +413,45 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 
 	return true;
 }
+
+bool FactorySystem::enqueueProductionEvent(const std::string& workOrderId,
+	const std::string& equipmentId, int produced, int defects) {
+
+	const WorkOrder* workOrder = findWorkOrder(workOrderId);
+	const Equipment* equipment = findEquipment(equipmentId);
+
+	if ( (workOrder == nullptr) || 
+		(equipment == nullptr)) {
+		return false;
+	}
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+
+	if (assignedEquipmentId != equipmentId) return false;
+
+	if ((workOrder->getStatus() != WorkOrderStatus::RUNNING)
+		|| (equipment->getStatus() != EquipmentStatus::RUNNING)) {
+		return false;
+	}
+
+	if (!workOrder->canRecordProduction(produced, defects) || 
+		!equipment->canRecordProduction(produced, defects) )
+		return false;
+
+	ProductionEvent productionEvent(nextProductionEventId, workOrderId, 
+		equipmentId, produced, defects);
+	pendingProductionEvents.push(productionEvent);
+
+	nextProductionEventId++;
+
+	return true;
+}
+
+int FactorySystem::getPendingProductionEventCount() const {
+	return pendingProductionEvents.size();
+}
+
+bool FactorySystem::isProductionEventQueueEmpty() const {
+	return pendingProductionEvents.empty();
+}
+

@@ -13,6 +13,12 @@ int FactorySystem::findEquipmentIndex(const std::string& id) const {
 	return -1;
 }
 
+bool FactorySystem::rejectProductionEvent(const ProductionEvent& productionEvent) {
+	rejectedProductionEvents.push_back(productionEvent);
+	pendingProductionEvents.pop();
+	return false;
+}
+
 int FactorySystem::findWorkOrderIndex ( const std::string& id ) const {
 	for ( int i = 0; i < workOrders.size ( ); i++ ) {
 		if ( workOrders[ i ].getId ( ) == id ) return i;
@@ -425,18 +431,17 @@ bool FactorySystem::enqueueProductionEvent(const std::string& workOrderId,
 		return false;
 	}
 
-	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
-
-	if (assignedEquipmentId != equipmentId) return false;
+	if (workOrder->getAssignedEquipmentId() != productionEvent.getEquipmentId())
+		return rejectProductionEvent(productionEvent);
 
 	if ((workOrder->getStatus() != WorkOrderStatus::RUNNING)
 		|| (equipment->getStatus() != EquipmentStatus::RUNNING)) {
-		return false;
+		return rejectProductionEvent(productionEvent);
 	}
 
 	if (!workOrder->canRecordProduction(produced, defects) || 
 		!equipment->canRecordProduction(produced, defects) )
-		return false;
+		return rejectProductionEvent(productionEvent);
 
 	ProductionEvent productionEvent(nextProductionEventId, workOrderId, 
 		equipmentId, produced, defects); // 위를 다 통과하면 productionEvent 객체 만듦(아직 실행 전)
@@ -468,7 +473,7 @@ bool FactorySystem::processNextProductionEvent() {
 
 	// 수정 : nullptr 검사 추가
 	if (workOrder == nullptr || equipment == nullptr)
-		return false;
+		return rejectProductionEvent(productionEvent);
 
 	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
 
@@ -525,3 +530,27 @@ bool FactorySystem::processNextProductionEvent() {
 
 	return true;
 }
+
+int FactorySystem::processAllProductionEvents() {
+	// 큐가 빌 때까지 processNextProductionEvent()를 반복 호출
+
+	int processedCountBefore = processedProductionEvents.size();
+
+	while (!isProductionEventQueueEmpty()) {
+		processNextProductionEvent();
+	}
+
+	int processedCountAfter = processedProductionEvents.size();
+
+	return processedCountAfter - processedCountBefore;
+}
+
+const vector<ProductionEvent>& FactorySystem::getProcessedProductionEvents() const {
+	return processedProductionEvents;
+}
+
+
+const vector<ProductionEvent>& FactorySystem::getRejectedProductionEvents() const {
+	return rejectedProductionEvents;
+}
+

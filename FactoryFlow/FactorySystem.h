@@ -17,6 +17,7 @@ private:
 	int nextProductionEventId;  // 이벤트마다 고유 번호 자동 발급
 	std::vector<ProductionEvent> processedProductionEvents; // 처리된 생산실적들 벡터
 	std::vector<ProductionEvent> rejectedProductionEvents; // 거부된 생산실적들 벡터
+	bool rejectProductionEvent(const ProductionEvent& productionEvent);
 
 public:
 	FactorySystem();
@@ -55,4 +56,8 @@ public:
 	bool isProductionEventQueueEmpty() const;
 
 	bool processNextProductionEvent();
+	int processAllProductionEvents(); //큐가 빌 때까지 processNextProductionEvent() 반복 호출 
+	std::vector<ProductionEvent>* getProcessedProductionEvents();
+	std::vector<ProductionEvent>* getRejectedProductionEvents();
+
 };

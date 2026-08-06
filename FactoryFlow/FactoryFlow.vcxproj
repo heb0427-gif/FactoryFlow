@@ -145,6 +145,8 @@
     <ClCompile Include="FactoryFlow.cpp" />
     <ClCompile Include="FactoryFlowMenu.cpp" />
     <ClCompile Include="FactorySystem.cpp" />
+    <ClCompile Include="ProductionEvent.cpp" />
+    <ClCompile Include="ProductionMenu.cpp" />
     <ClCompile Include="WorkOrder.cpp" />
     <ClCompile Include="WorkOrderMenu.cpp" />
   </ItemGroup>
@@ -153,6 +155,8 @@
     <ClInclude Include="EquipmentMenu.h" />
     <ClInclude Include="FactoryFlowMenu.h" />
     <ClInclude Include="FactorySystem.h" />
+    <ClInclude Include="ProductionEvent.h" />
+    <ClInclude Include="ProductionMenu.h" />
     <ClInclude Include="WorkOrder.h" />
     <ClInclude Include="WorkOrderMenu.h" />
   </ItemGroup>

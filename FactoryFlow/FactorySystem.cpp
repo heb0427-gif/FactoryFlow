@@ -439,10 +439,11 @@ bool FactorySystem::enqueueProductionEvent(const std::string& workOrderId,
 		return false;
 
 	ProductionEvent productionEvent(nextProductionEventId, workOrderId, 
-		equipmentId, produced, defects);
-	pendingProductionEvents.push(productionEvent);
+		equipmentId, produced, defects); // 위를 다 통과하면 productionEvent 객체 만듦(아직 실행 전)
 
-	nextProductionEventId++;
+	pendingProductionEvents.push(productionEvent); // 대기큐에 push
+
+	nextProductionEventId++; // 객체 고유번호 증가시킴
 
 	return true;
 }
@@ -455,3 +456,72 @@ bool FactorySystem::isProductionEventQueueEmpty() const {
 	return pendingProductionEvents.empty();
 }
 
+bool FactorySystem::processNextProductionEvent() {
+
+	if (isProductionEventQueueEmpty())
+		return false;
+
+	ProductionEvent productionEvent = pendingProductionEvents.front();
+
+	WorkOrder* workOrder = findWorkOrder(productionEvent.getWorkOrderId());
+	Equipment* equipment = findEquipment(productionEvent.getEquipmentId());
+
+	// 수정 : nullptr 검사 추가
+	if (workOrder == nullptr || equipment == nullptr)
+		return false;
+
+	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
+
+	if (assignedEquipmentId != equipment->getId())
+		return false;
+
+	if (workOrder->getStatus() != WorkOrderStatus::RUNNING ||
+		equipment->getStatus() != EquipmentStatus::RUNNING)
+		return false;
+
+	if (!workOrder->canRecordProduction(
+		productionEvent.getProducedQuantity(),
+		productionEvent.getDefectQuantity()) ||
+
+		!equipment->canRecordProduction(
+			productionEvent.getProducedQuantity(),
+			productionEvent.getDefectQuantity()))
+		return false;
+
+	// 수정 : 각각 성공 여부를 따로 확인
+	bool workOrderRecorded =
+		workOrder->recordProduction(
+			productionEvent.getProducedQuantity(),
+			productionEvent.getDefectQuantity());
+
+	bool equipmentRecorded =
+		equipment->recordProduction(
+			productionEvent.getProducedQuantity(),
+			productionEvent.getDefectQuantity());
+
+	if (!workOrderRecorded || !equipmentRecorded)
+		return false;
+
+	// 수정 : 설비 종료 → 작업 완료 순으로 변경
+	if (workOrder->isTargetReached()) {
+
+		if (!equipment->changeStatus(EquipmentStatus::STOPPED))
+			return false;
+
+		if (!workOrder->complete()) {
+
+			// 수정 : 실패 시 설비 상태 복구
+			equipment->changeStatus(EquipmentStatus::RUNNING);
+
+			return false;
+		}
+	}
+
+	// 처리 완료 이력 저장
+	processedProductionEvents.push_back(productionEvent);
+
+	// 큐에서 제거
+	pendingProductionEvents.pop();
+
+	return true;
+}

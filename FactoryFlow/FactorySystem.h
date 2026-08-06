@@ -18,7 +18,6 @@ private:
 	std::vector<ProductionEvent> processedProductionEvents; // 처리된 생산실적들 벡터
 	std::vector<ProductionEvent> rejectedProductionEvents; // 거부된 생산실적들 벡터
 
-
 public:
 	FactorySystem();
 	// 설비 등록 함수
@@ -52,4 +51,8 @@ public:
 
 	bool enqueueProductionEvent(const std::string& workOrderId, 
 		const std::string& equipmentId, int produced, int defects);
+	int getPendingProductionEventCount() const;
+	bool isProductionEventQueueEmpty() const;
+
+	bool processNextProductionEvent();
 };

@@ -144,42 +144,23 @@ bool FactorySystem::startWorkOrder(const std::string& workOrderId) {
 
 	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
-	if (workOrder == nullptr) {
-		cout << "workOrder is nullptr.\n\n";
-		return false;
-	}
+	if (workOrder == nullptr) return false;
 
-	if (!workOrder->hasAssignedEquipment()) {
-		cout << "workOrder has not Equipment.\n\n";
-		return false;
-	}
+	if (!workOrder->hasAssignedEquipment()) return false;
 
-	if (workOrder->getStatus() != WorkOrderStatus::READY) {
-		cout << "workOrder's status is not READY.\n\n";
-		return false;
-	}
+	if (workOrder->getStatus() != WorkOrderStatus::READY) return false;
 
 	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
 	Equipment* equipment = findEquipment(assignedEquipmentId);
 
-	if (equipment == nullptr) {
-		cout << "equipment is nullptr.\n\n";
-		return false;
-	}
+	if (equipment == nullptr) return false;
 
-	if (equipment->getStatus() != EquipmentStatus::STOPPED) {
-		cout << "equipment status is not STOPPED.\n\n";
-		return false;
-	}
+	if (equipment->getStatus() != EquipmentStatus::STOPPED) return false;
 
 	// 설비 상태 변경
-	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) {
-		cout << "Failed to change equipment status.\n\n";
-		return false;
-	}
+	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) return false;
 
 	if (!workOrder->start()) { // 작업 지시 상태 변경
-		cout << "Failed to change work order status. Changed the equipment status from RUNNING to STOPPED.\n\n";
 		equipment->changeStatus(EquipmentStatus::STOPPED);
 		return false;
 	}
@@ -192,41 +173,23 @@ bool FactorySystem::pauseWorkOrder(const std::string& workOrderId) {
 
 	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
-	if (workOrder == nullptr) {
-		cout << "workOrder is nullptr.\n\n";
-		return false;
-	}
+	if (workOrder == nullptr) return false;
 
-	if (!workOrder->hasAssignedEquipment()) {
-		cout << "workOrder has not Equipment.\n\n";
-		return false;
-	}
-	if (workOrder->getStatus() != WorkOrderStatus::RUNNING) {
-		cout << "workOrder's status is not RUNNING.\n\n";
-		return false;
-	}
+	if (!workOrder->hasAssignedEquipment()) return false;
+
+	if (workOrder->getStatus() != WorkOrderStatus::RUNNING)	return false;
 
 	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
 	Equipment* equipment = findEquipment(assignedEquipmentId);
 
-	if (equipment == nullptr) {
-		cout << "equipment is nullptr.\n\n";
-		return false;
-	}
+	if (equipment == nullptr) return false;
 
-	if (equipment->getStatus() != EquipmentStatus::RUNNING) {
-		cout << "equipment status is not RUNNING.\n\n";
-		return false;
-	}
+	if (equipment->getStatus() != EquipmentStatus::RUNNING) return false;
 
 	// 설비 상태 변경
-	if (!equipment->changeStatus(EquipmentStatus::PAUSED)) {
-		cout << "Failed to change equipment status to PAUSED.\n\n";
-		return false;
-	}
+	if (!equipment->changeStatus(EquipmentStatus::PAUSED)) return false;
 
 	if (!workOrder->pause()) { // 작업 지시 상태 변경
-		cout << "Failed to change work order status to pause. Changed the equipment status from PAUSED to RUNNING.\n\n";
 		equipment->changeStatus(EquipmentStatus::RUNNING);
 		return false;
 	}
@@ -239,42 +202,23 @@ bool FactorySystem::resumeWorkOrder(const std::string& workOrderId) {
 
 	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
-	if (workOrder == nullptr) {
-		cout << "workOrder is nullptr.\n\n";
-		return false;
-	}
+	if (workOrder == nullptr) return false;
 
-	if (!workOrder->hasAssignedEquipment()) {
-		cout << "workOrder has not Equipment.\n\n";
-		return false;
-	}
+	if (!workOrder->hasAssignedEquipment()) return false;
 
-	if (workOrder->getStatus() != WorkOrderStatus::PAUSED) {
-		cout << "workOrder's status is not PAUSED.\n\n";
-		return false;
-	}
+	if (workOrder->getStatus() != WorkOrderStatus::PAUSED) return false;
 
 	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
 	Equipment* equipment = findEquipment(assignedEquipmentId);
 
-	if (equipment == nullptr) {
-		cout << "equipment is nullptr.\n\n";
-		return false;
-	}
+	if (equipment == nullptr) return false;
 
-	if (equipment->getStatus() != EquipmentStatus::PAUSED) {
-		cout << "equipment status is not PAUSED.\n\n";
-		return false;
-	}
+	if (equipment->getStatus() != EquipmentStatus::PAUSED) return false;
 
 	// 설비 상태 변경
-	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) {
-		cout << "Failed to change equipment status to RUNNING.\n\n";
-		return false;
-	}
+	if (!equipment->changeStatus(EquipmentStatus::RUNNING)) return false;
 
 	if (!workOrder->resume()) { // 작업 지시 상태 변경
-		cout << "Failed to change work order status to RUNNING. Changed the equipment status from RUNNING to PAUSED.\n\n";
 		equipment->changeStatus(EquipmentStatus::PAUSED);
 		return false;
 	}
@@ -287,18 +231,13 @@ bool FactorySystem::completeWorkOrder(const std::string& workOrderId) {
 
 	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
-	if (workOrder == nullptr) {
-		cout << "workOrder is nullptr.\n\n";
-		return false;
-	}
+	if (workOrder == nullptr) return false;
 
 	if (!workOrder->hasAssignedEquipment()) {
-		cout << "workOrder has not Equipment.\n\n";
 		return false;
 	}
 
 	if (workOrder->getStatus() != WorkOrderStatus::RUNNING) {
-		cout << "workOrder's status is not RUNNING.\n\n";
 		return false;
 	}
 
@@ -306,23 +245,19 @@ bool FactorySystem::completeWorkOrder(const std::string& workOrderId) {
 	Equipment* equipment = findEquipment(assignedEquipmentId);
 
 	if (equipment == nullptr) {
-		cout << "equipment is nullptr.\n\n";
 		return false;
 	}
 
 	if (equipment->getStatus() != EquipmentStatus::RUNNING) {
-		cout << "equipment status is not RUNNING.\n\n";
 		return false;
 	}
 
 	// 설비 상태 변경
 	if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
-		cout << "Failed to change equipment status to STOPPED.\n\n";
 		return false;
 	}
 
 	if (!workOrder->complete()) { // 작업 지시 상태 변경
-		cout << "Failed to change work order status to COMPLETED. Changed the equipment status from STOPPED to RUNNING.\n\n";
 		equipment->changeStatus(EquipmentStatus::RUNNING);
 		return false;
 	}
@@ -336,15 +271,12 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
 	if (workOrder == nullptr) {
-		cout << "workOrder is nullptr.\n\n";
 		return false;
 	}
 
 	if (!workOrder->hasAssignedEquipment()) { // 설비 배정 전이라면
-		cout << "workOrder has not Equipment. work order cancel.\n\n";
 
 		if (!workOrder->cancel()) { // 작업 지시 상태 변경
-			cout << "Failed to change work order status to CANCELLED.\n\n";
 			return false;
 		}
 
@@ -353,7 +285,6 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 
 	if ( (workOrder->getStatus() == WorkOrderStatus::COMPLETED) || 
 		(workOrder->getStatus() == WorkOrderStatus::CANCELLED) ) {
-		cout << "workOrder's status is COMPLETED or CANCELLED.\n\n";
 		return false;
 	}
 
@@ -361,7 +292,6 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 	Equipment* equipment = findEquipment(assignedEquipmentId);
 
 	if (equipment == nullptr) {
-		cout << "equipment is nullptr.\n\n";
 		return false;
 	}
 
@@ -370,13 +300,11 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 	// 설비 상태 변경
 	if (currentEquipmentStatus != EquipmentStatus::STOPPED) {
 		if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
-			cout << "Failed to change equipment status to STOPPED.\n\n";
 			return false;
 		}
 	}
 
 	if (!workOrder->cancel()) { // 작업 지시 상태 변경
-		cout << "Failed to change work order status to CANCELLED. Changed the equipment status to currentEquipmentStatus.\n\n";
 		
 		bool restoreSucceeded = true;
 
@@ -411,7 +339,7 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 		}
 
 		if (!restoreSucceeded) {
-			cout << "Failed to restore equipment status.\n\n";
+			return false;
 		}
 
 		return false;
@@ -508,42 +436,55 @@ bool FactorySystem::processNextProductionEvent() {
 	// 여기부터는 이미 검증을 통과한 이벤트의 실제 처리
 
 	// 수정 : 각각 성공 여부를 따로 확인
+
+	int produced = productionEvent.getProducedQuantity();
+	int defects = productionEvent.getDefectQuantity();
+
 	bool workOrderRecorded =
-		workOrder->recordProduction(
-			productionEvent.getProducedQuantity(),
-			productionEvent.getDefectQuantity());
+		workOrder->recordProduction(produced, defects);
 
 	if (!workOrderRecorded) {
-		pendingProductionEvents.pop();
-		return false;
+		return rejectProductionEvent(productionEvent);
 	}
 
 	bool equipmentRecorded =
-		equipment->recordProduction(
-			productionEvent.getProducedQuantity(),
-			productionEvent.getDefectQuantity());
+		equipment->recordProduction(produced, defects);
 
 	if (!equipmentRecorded) {
-		pendingProductionEvents.pop();
-		return false;
+
+		// WorkOrder에는 이미 실적이 반영되었으므로 되돌림
+		bool workOrderRollbackSucceeded =
+			workOrder->rollbackProduction(produced, defects);
+
+		if (!workOrderRollbackSucceeded) {
+			// 현재 구조에서는 발생하면 안 되는 내부 오류
+			pendingProductionEvents.pop();
+			return false;
+		}
+
+		// 둘 다 이벤트 반영 전 상태로 돌아왔으므로
+		// rejected 이벤트로 처리
+		return rejectProductionEvent(productionEvent);
 	}
 
 	// 수정 : 설비 종료 → 작업 완료 순으로 변경
 	if (workOrder->isTargetReached()) {
 
 		if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
-			pendingProductionEvents.pop();
-			return false;
+			workOrder->rollbackProduction(produced, defects);
+			equipment->rollbackProduction(produced, defects);
+
+			return rejectProductionEvent(productionEvent);
 		}
 			
 
 		if (!workOrder->complete()) {
 
 			// 수정 : 실패 시 설비 상태 복구
-			equipment->changeStatus(EquipmentStatus::RUNNING);
+			workOrder->rollbackProduction(produced, defects);
+			equipment->rollbackProduction(produced, defects);
 
-			pendingProductionEvents.pop();
-			return false;
+			return rejectProductionEvent(productionEvent);
 		}
 	}
 

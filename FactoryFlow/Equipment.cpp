@@ -84,3 +84,17 @@ bool Equipment::recordProduction(int produced, int defects) {
 
 	return true;
 }
+
+bool Equipment::rollbackProduction(int produced, int defects) {
+	if (produced < 0 || defects < 0)
+		return false;
+
+	if (totalProducedQuantity < produced ||
+		totalDefectQuantity < defects)
+		return false;
+
+	totalProducedQuantity -= produced;
+	totalDefectQuantity -= defects;
+
+	return true;
+}

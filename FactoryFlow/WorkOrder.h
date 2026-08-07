@@ -57,6 +57,7 @@ public :
 	bool canRecordProduction(int produced, int defects) const;
 	bool recordProduction(int produced, int defects);
 
+	bool rollbackProduction(int produced, int defects);
 };
 
 std::string workOrderStatusToString ( WorkOrderStatus status );

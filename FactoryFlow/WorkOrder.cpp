@@ -163,3 +163,18 @@ bool WorkOrder::recordProduction(int produced, int defects) {
 
 	return true;
 }
+
+bool WorkOrder::rollbackProduction(int produced, int defects) {
+	if (produced < 0 || defects < 0)
+		return false;
+
+	if (producedQuantity < produced ||
+		defectQuantity < defects)
+		return false;
+
+	producedQuantity -= produced;
+	defectQuantity -= defects;
+
+	return true;
+}
+

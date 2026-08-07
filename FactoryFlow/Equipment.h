@@ -32,7 +32,7 @@ public :
 	bool canRecordProduction(int produced, int defects) const; // 현재 설비가 해당 생산실적을 받을 수 있는지 검사(값은 변경 안 함)
 	bool recordProduction(int produced, int defects); // 검증된 생산 수량과 불량 수량을 설비 누적 실적에 반영
 
-
+	bool rollbackProduction(int produced, int defects);
 };
 
 std::string equipmentStatusToString(EquipmentStatus status);

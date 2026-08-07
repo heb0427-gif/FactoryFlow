@@ -3,12 +3,13 @@
 #include "EquipmentMenu.h"
 #include "WorkOrderMenu.h"
 #include "ProductionMenu.h"
+#include <limits>
 using namespace std;
 
 FactoryFlowMenu::FactoryFlowMenu(FactorySystem& system)
 	: system(system), equipmentMenu(system), workOrderMenu(system), 
 	productionMenu(system) {}
-
+ 
 void FactoryFlowMenu::printMenu( ) const {
 	cout << "================================\n";
 	cout << "	FactoryFlow v0.3\n";

@@ -29,13 +29,20 @@ void WorkOrderMenu::printWorkOrder(const WorkOrder& workOrder) const {
 	cout << "Product Code: " << workOrder.getProductCode() << "\n";
 	cout << "Target Quantity: " << workOrder.getTargetQuantity() << "\n";
 	cout << "Priority: " << workOrderPriorityToString(workOrder.getPriority()) << "\n";
-	
+
 	if (!workOrder.hasAssignedEquipment())
 		cout << "Assigned Equipment: NONE" << "\n";
 	else
 		cout << "Assigned Equipment: " << workOrder.getAssignedEquipmentId() << "\n";
 
-	cout << "Status: " << workOrderStatusToString(workOrder.getStatus()) << "\n\n";
+	cout << "Status: " << workOrderStatusToString(workOrder.getStatus()) << "\n";
+	cout << "Produced Quantity: " << workOrder.getProducedQuantity() << "\n";
+	cout << "Pass Quantity: " << workOrder.getPassQuantity() << "\n";
+	cout << "Defect Quantity: " << workOrder.getDefectQuantity() << "\n";
+	cout << "Remaining Quantity: " << workOrder.getRemainingQuantity() << "\n";
+	cout << "Progress Rate: " << workOrder.getProgressRate() << "\n";
+	cout << "Defect Rate: " << workOrder.getDefectRate() << "\n\n";
+
 }
 
 void WorkOrderMenu::handleCreateWorkOrder() {

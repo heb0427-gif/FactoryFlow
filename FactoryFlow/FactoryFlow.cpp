@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <cmath>
+#include <vector>
 
 #include "FactorySystem.h"
 
@@ -8,19 +10,23 @@ using namespace std;
 int passedCount = 0;
 int failedCount = 0;
 
-void printTestResult(
-	int testNumber,
+void printSection(const string& title) {
+	cout << "\n==================================================\n";
+	cout << title << "\n";
+	cout << "==================================================\n\n";
+}
+
+void checkBool(
+	int number,
 	const string& description,
-	bool actualResult,
-	bool expectedResult
-) {
-	bool passed = actualResult == expectedResult;
+	bool actual,
+	bool expected) {
 
-	cout << "[" << testNumber << "] "
-		<< description << "\n";
+	bool passed = (actual == expected);
 
-	cout << "Expected: " << boolalpha << expectedResult << "\n";
-	cout << "Actual  : " << boolalpha << actualResult << "\n";
+	cout << "[" << number << "] " << description << "\n";
+	cout << "Expected: " << boolalpha << expected << "\n";
+	cout << "Actual  : " << boolalpha << actual << "\n";
 	cout << "Result  : " << (passed ? "PASS" : "FAIL") << "\n\n";
 
 	if (passed)
@@ -29,32 +35,65 @@ void printTestResult(
 		failedCount++;
 }
 
-void printWorkOrderStatusResult(
+void checkInt(
+	const string& description,
+	int actual,
+	int expected) {
+
+	bool passed = (actual == expected);
+
+	cout << description << "\n";
+	cout << "Expected: " << expected << "\n";
+	cout << "Actual  : " << actual << "\n";
+	cout << "Result  : " << (passed ? "PASS" : "FAIL") << "\n\n";
+
+	if (passed)
+		passedCount++;
+	else
+		failedCount++;
+}
+
+void checkFloat(
+	const string& description,
+	float actual,
+	float expected,
+	float epsilon = 0.01f) {
+
+	bool passed = fabs(actual - expected) < epsilon;
+
+	cout << description << "\n";
+	cout << "Expected: " << expected << "\n";
+	cout << "Actual  : " << actual << "\n";
+	cout << "Result  : " << (passed ? "PASS" : "FAIL") << "\n\n";
+
+	if (passed)
+		passedCount++;
+	else
+		failedCount++;
+}
+
+void checkWorkOrderStatus(
 	const FactorySystem& system,
 	const string& workOrderId,
-	WorkOrderStatus expectedStatus
-) {
+	WorkOrderStatus expected) {
+
 	const WorkOrder* workOrder = system.findWorkOrder(workOrderId);
 
 	if (workOrder == nullptr) {
-		cout << "WorkOrder " << workOrderId
-			<< " was not found.\n";
-		cout << "Status check: FAIL\n\n";
+		cout << "WorkOrder " << workOrderId << " not found.\n";
+		cout << "Result  : FAIL\n\n";
 
 		failedCount++;
 		return;
 	}
 
-	WorkOrderStatus actualStatus = workOrder->getStatus();
-	bool passed = actualStatus == expectedStatus;
+	WorkOrderStatus actual = workOrder->getStatus();
+	bool passed = (actual == expected);
 
 	cout << "WorkOrder " << workOrderId << " status\n";
-	cout << "Expected: "
-		<< workOrderStatusToString(expectedStatus) << "\n";
-	cout << "Actual  : "
-		<< workOrderStatusToString(actualStatus) << "\n";
-	cout << "Result  : "
-		<< (passed ? "PASS" : "FAIL") << "\n\n";
+	cout << "Expected: " << workOrderStatusToString(expected) << "\n";
+	cout << "Actual  : " << workOrderStatusToString(actual) << "\n";
+	cout << "Result  : " << (passed ? "PASS" : "FAIL") << "\n\n";
 
 	if (passed)
 		passedCount++;
@@ -62,622 +101,820 @@ void printWorkOrderStatusResult(
 		failedCount++;
 }
 
-void printEquipmentStatusResult(
+void checkEquipmentStatus(
 	const FactorySystem& system,
 	const string& equipmentId,
-	EquipmentStatus expectedStatus
-) {
+	EquipmentStatus expected) {
+
 	const Equipment* equipment = system.findEquipment(equipmentId);
 
 	if (equipment == nullptr) {
-		cout << "Equipment " << equipmentId
-			<< " was not found.\n";
-		cout << "Status check: FAIL\n\n";
+		cout << "Equipment " << equipmentId << " not found.\n";
+		cout << "Result  : FAIL\n\n";
 
 		failedCount++;
 		return;
 	}
 
-	EquipmentStatus actualStatus = equipment->getStatus();
-	bool passed = actualStatus == expectedStatus;
+	EquipmentStatus actual = equipment->getStatus();
+	bool passed = (actual == expected);
 
 	cout << "Equipment " << equipmentId << " status\n";
-	cout << "Expected: "
-		<< equipmentStatusToString(expectedStatus) << "\n";
-	cout << "Actual  : "
-		<< equipmentStatusToString(actualStatus) << "\n";
-	cout << "Result  : "
-		<< (passed ? "PASS" : "FAIL") << "\n\n";
+	cout << "Expected: " << equipmentStatusToString(expected) << "\n";
+	cout << "Actual  : " << equipmentStatusToString(actual) << "\n";
+	cout << "Result  : " << (passed ? "PASS" : "FAIL") << "\n\n";
 
 	if (passed)
 		passedCount++;
 	else
 		failedCount++;
-}
-
-void printSection(const string& title) {
-	cout << "==================================================\n";
-	cout << title << "\n";
-	cout << "==================================================\n\n";
 }
 
 int main() {
 	cout << boolalpha;
 
-	printSection("FactoryFlow v0.2.0 Integration Test");
+	// ==================================================
+	// 기본 통합 테스트
+	// ==================================================
+
+	printSection("FactoryFlow v0.3.0 - Basic Integration Test");
 
 	FactorySystem system;
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 1
-	// M01 설비 등록
-	// --------------------------------------------------
-	bool test1 = system.registerEquipment(
-		"M01",
-		"Equipment 01"
-	);
-
-	printTestResult(
+	// 1. M01 등록 -> STOPPED
+	checkBool(
 		1,
-		"Register equipment M01",
-		test1,
+		"Register M01",
+		system.registerEquipment("M01", "Equipment 01"),
 		true
 	);
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 2
-	// WO001 생성 -> WAITING
-	// --------------------------------------------------
-	bool test2 = system.createWorkOrder(
-		"WO001",
-		"PART-A",
-		100,
-		WorkOrderPriority::HIGH
-	);
-
-	printTestResult(
-		2,
-		"Create work order WO001",
-		test2,
-		true
-	);
-
-	printWorkOrderStatusResult(
-		system,
-		"WO001",
-		WorkOrderStatus::WAITING
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 3
-	// WO001에 M01 배정 -> READY
-	// --------------------------------------------------
-	bool test3 = system.assignEquipmentToWorkOrder(
-		"WO001",
-		"M01"
-	);
-
-	printTestResult(
-		3,
-		"Assign M01 to WO001",
-		test3,
-		true
-	);
-
-	printWorkOrderStatusResult(
-		system,
-		"WO001",
-		WorkOrderStatus::READY
-	);
-
-	printEquipmentStatusResult(
+	checkEquipmentStatus(
 		system,
 		"M01",
 		EquipmentStatus::STOPPED
 	);
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 4
-	// WO001 시작 -> 둘 다 RUNNING
-	// --------------------------------------------------
-	bool test4 = system.startWorkOrder("WO001");
+	// 2. WO001 목표 20 생성 -> WAITING
+	checkBool(
+		2,
+		"Create WO001, target quantity 20",
+		system.createWorkOrder(
+			"WO001",
+			"PART-A",
+			20,
+			WorkOrderPriority::HIGH
+		),
+		true
+	);
 
-	printTestResult(
+	checkWorkOrderStatus(
+		system,
+		"WO001",
+		WorkOrderStatus::WAITING
+	);
+
+	// 3. M01 배정 -> READY
+	checkBool(
+		3,
+		"Assign M01 to WO001",
+		system.assignEquipmentToWorkOrder("WO001", "M01"),
+		true
+	);
+
+	checkWorkOrderStatus(
+		system,
+		"WO001",
+		WorkOrderStatus::READY
+	);
+
+	// 4. 작업 시작 -> 둘 다 RUNNING
+	checkBool(
 		4,
 		"Start WO001",
-		test4,
+		system.startWorkOrder("WO001"),
 		true
 	);
 
-	printWorkOrderStatusResult(
+	checkWorkOrderStatus(
 		system,
 		"WO001",
 		WorkOrderStatus::RUNNING
 	);
 
-	printEquipmentStatusResult(
+	checkEquipmentStatus(
 		system,
 		"M01",
 		EquipmentStatus::RUNNING
 	);
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 5
-	// WO001 일시정지 -> 둘 다 PAUSED
-	// --------------------------------------------------
-	bool test5 = system.pauseWorkOrder("WO001");
-
-	printTestResult(
+	// 5. 생산 10 / 불량 2 등록 -> pending 1
+	checkBool(
 		5,
-		"Pause WO001",
-		test5,
+		"Enqueue production 10, defect 2",
+		system.enqueueProductionEvent("WO001", "M01", 10, 2),
 		true
 	);
 
-	printWorkOrderStatusResult(
-		system,
-		"WO001",
-		WorkOrderStatus::PAUSED
+	checkInt(
+		"Pending event count",
+		system.getPendingProductionEventCount(),
+		1
 	);
 
-	printEquipmentStatusResult(
-		system,
-		"M01",
-		EquipmentStatus::PAUSED
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 6
-	// WO001 재개 -> 둘 다 RUNNING
-	// --------------------------------------------------
-	bool test6 = system.resumeWorkOrder("WO001");
-
-	printTestResult(
+	// 6. 생산 5 / 불량 1 등록 -> pending 2
+	checkBool(
 		6,
-		"Resume WO001",
-		test6,
+		"Enqueue production 5, defect 1",
+		system.enqueueProductionEvent("WO001", "M01", 5, 1),
 		true
 	);
 
-	printWorkOrderStatusResult(
-		system,
-		"WO001",
-		WorkOrderStatus::RUNNING
+	checkInt(
+		"Pending event count",
+		system.getPendingProductionEventCount(),
+		2
 	);
 
-	printEquipmentStatusResult(
-		system,
-		"M01",
-		EquipmentStatus::RUNNING
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 7
-	// WO001 완료 -> WorkOrder COMPLETED, M01 STOPPED
-	// --------------------------------------------------
-	bool test7 = system.completeWorkOrder("WO001");
-
-	printTestResult(
+	// 7. 다음 이벤트 처리 -> 생산 10 / 불량 2
+	checkBool(
 		7,
-		"Complete WO001",
-		test7,
+		"Process next production event",
+		system.processNextProductionEvent(),
 		true
 	);
 
-	printWorkOrderStatusResult(
+	const WorkOrder* workOrder = system.findWorkOrder("WO001");
+
+	if (workOrder != nullptr) {
+		checkInt(
+			"WO001 produced quantity after first event",
+			workOrder->getProducedQuantity(),
+			10
+		);
+
+		checkInt(
+			"WO001 defect quantity after first event",
+			workOrder->getDefectQuantity(),
+			2
+		);
+	}
+	else {
+		cout << "WO001 not found.\n";
+		failedCount += 2;
+	}
+
+	// 8. 나머지 이벤트 모두 처리 -> 생산 15 / 불량 3
+	int processedCount = system.processAllProductionEvents();
+
+	checkInt(
+		"Processed count by processAllProductionEvents",
+		processedCount,
+		1
+	);
+
+	workOrder = system.findWorkOrder("WO001");
+
+	if (workOrder != nullptr) {
+		checkInt(
+			"WO001 total produced quantity",
+			workOrder->getProducedQuantity(),
+			15
+		);
+
+		checkInt(
+			"WO001 total defect quantity",
+			workOrder->getDefectQuantity(),
+			3
+		);
+	}
+
+	// 9. 생산 5 / 불량 0 등록 후 처리 -> 목표 20 달성
+	checkBool(
+		9,
+		"Enqueue final production 5, defect 0",
+		system.enqueueProductionEvent("WO001", "M01", 5, 0),
+		true
+	);
+
+	checkBool(
+		9,
+		"Process final production event",
+		system.processNextProductionEvent(),
+		true
+	);
+
+	// 10. 목표 달성 -> COMPLETED
+	checkWorkOrderStatus(
 		system,
 		"WO001",
 		WorkOrderStatus::COMPLETED
 	);
 
-	printEquipmentStatusResult(
+	// 11. 설비 -> STOPPED
+	checkEquipmentStatus(
 		system,
 		"M01",
 		EquipmentStatus::STOPPED
 	);
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 8
-	// 완료 작업 재시작 -> 실패
-	// --------------------------------------------------
-	bool test8 = system.startWorkOrder("WO001");
+	workOrder = system.findWorkOrder("WO001");
 
-	printTestResult(
-		8,
-		"Restart completed WO001",
-		test8,
-		false
+	// 12. 진행률 100%
+	if (workOrder != nullptr) {
+		checkFloat(
+			"WO001 progress rate",
+			workOrder->getProgressRate(),
+			100.0f
+		);
+
+		// 13. 불량률 3 / 20 = 15%
+		checkFloat(
+			"WO001 defect rate",
+			workOrder->getDefectRate(),
+			15.0f
+		);
+	}
+
+	// 14. 설비 누적 실적 -> 생산 20 / 불량 3
+	const Equipment* equipment = system.findEquipment("M01");
+
+	if (equipment != nullptr) {
+		checkInt(
+			"M01 total produced quantity",
+			equipment->getTotalProducedQuantity(),
+			20
+		);
+
+		checkInt(
+			"M01 total defect quantity",
+			equipment->getTotalDefectQuantity(),
+			3
+		);
+
+		checkInt(
+			"M01 total pass quantity",
+			equipment->getTotalPassQuantity(),
+			17
+		);
+
+		checkFloat(
+			"M01 defect rate",
+			equipment->getDefectRate(),
+			15.0f
+		);
+	}
+
+	// 공장 전체 생산 현황도 추가 확인
+	checkInt(
+		"Factory total produced quantity",
+		system.getTotalProducedQuantity(),
+		20
 	);
 
-	// --------------------------------------------------
-	// 기본 통합 테스트 9
-	// WO002에 M01 배정 -> 성공
-	// --------------------------------------------------
-	system.createWorkOrder(
-		"WO002",
-		"PART-B",
-		200,
-		WorkOrderPriority::NORMAL
+	checkInt(
+		"Factory total defect quantity",
+		system.getTotalDefectQuantity(),
+		3
 	);
 
-	bool test9 = system.assignEquipmentToWorkOrder(
-		"WO002",
-		"M01"
+	checkInt(
+		"Factory total pass quantity",
+		system.getTotalPassQuantity(),
+		17
 	);
 
-	printTestResult(
-		9,
-		"Assign released M01 to WO002",
-		test9,
-		true
-	);
-
-	printWorkOrderStatusResult(
-		system,
-		"WO002",
-		WorkOrderStatus::READY
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 10
-	// WO003에도 M01 배정 -> 실패
-	// --------------------------------------------------
-	system.createWorkOrder(
-		"WO003",
-		"PART-C",
-		300,
-		WorkOrderPriority::LOW
-	);
-
-	bool test10 = system.assignEquipmentToWorkOrder(
-		"WO003",
-		"M01"
-	);
-
-	printTestResult(
-		10,
-		"Assign active M01 to WO003",
-		test10,
-		false
-	);
-
-	printWorkOrderStatusResult(
-		system,
-		"WO003",
-		WorkOrderStatus::WAITING
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 11
-	// WO002 취소 -> CANCELLED, M01 STOPPED
-	// --------------------------------------------------
-	bool test11 = system.cancelWorkOrder("WO002");
-
-	printTestResult(
-		11,
-		"Cancel WO002",
-		test11,
-		true
-	);
-
-	printWorkOrderStatusResult(
-		system,
-		"WO002",
-		WorkOrderStatus::CANCELLED
-	);
-
-	printEquipmentStatusResult(
-		system,
-		"M01",
-		EquipmentStatus::STOPPED
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 12
-	// 존재하지 않는 설비 배정 -> 실패
-	// --------------------------------------------------
-	bool test12 = system.assignEquipmentToWorkOrder(
-		"WO003",
-		"M99"
-	);
-
-	printTestResult(
-		12,
-		"Assign nonexistent M99 to WO003",
-		test12,
-		false
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 13
-	// 존재하지 않는 작업 시작 -> 실패
-	// --------------------------------------------------
-	bool test13 = system.startWorkOrder("WO999");
-
-	printTestResult(
-		13,
-		"Start nonexistent WO999",
-		test13,
-		false
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 14
-	// 목표 수량 0으로 생성 -> 실패
-	// --------------------------------------------------
-	bool test14 = system.createWorkOrder(
-		"WO004",
-		"PART-D",
-		0,
-		WorkOrderPriority::NORMAL
-	);
-
-	printTestResult(
-		14,
-		"Create WO004 with target quantity 0",
-		test14,
-		false
-	);
-
-	// --------------------------------------------------
-	// 기본 통합 테스트 15
-	// 중복 작업지시 ID 생성 -> 실패
-	// --------------------------------------------------
-	bool test15 = system.createWorkOrder(
-		"WO001",
-		"PART-X",
-		500,
-		WorkOrderPriority::HIGH
-	);
-
-	printTestResult(
-		15,
-		"Create duplicate work order WO001",
-		test15,
-		false
+	checkFloat(
+		"Factory overall defect rate",
+		system.getOverallDefectRate(),
+		15.0f
 	);
 
 	// ==================================================
-	// 추가 상태 테스트
-	// 서로 영향을 주지 않도록 별도 FactorySystem 사용
+	// 등록 거부 테스트
 	// ==================================================
-	printSection("Additional State Tests");
 
-	// --------------------------------------------------
-	// 추가 테스트 16
-	// ERROR 상태 설비 배정 -> 실패
-	// --------------------------------------------------
+	printSection("Production Event Registration Rejection Tests");
+
+	// 존재하지 않는 작업지시
 	{
-		FactorySystem errorSystem;
+		FactorySystem testSystem;
 
-		errorSystem.registerEquipment(
-			"M10",
-			"Error Equipment"
-		);
-
-		errorSystem.createWorkOrder(
-			"WO010",
-			"PART-ERROR",
-			100,
-			WorkOrderPriority::HIGH
-		);
-
-		// STOPPED -> ERROR는 금지되어 있으므로
-		// STOPPED -> RUNNING -> ERROR 경로 사용
-		errorSystem.changeEquipmentStatus(
+		testSystem.registerEquipment("M10", "Equipment 10");
+		testSystem.changeEquipmentStatus(
 			"M10",
 			EquipmentStatus::RUNNING
 		);
 
-		errorSystem.changeEquipmentStatus(
-			"M10",
-			EquipmentStatus::ERROR
-		);
-
-		bool test16 =
-			errorSystem.assignEquipmentToWorkOrder(
-				"WO010",
-				"M10"
-			);
-
-		printTestResult(
-			16,
-			"Assign ERROR equipment M10",
-			test16,
+		checkBool(
+			15,
+			"Nonexistent work order",
+			testSystem.enqueueProductionEvent(
+				"WO999",
+				"M10",
+				5,
+				0
+			),
 			false
-		);
-
-		printEquipmentStatusResult(
-			errorSystem,
-			"M10",
-			EquipmentStatus::ERROR
 		);
 	}
 
-	// --------------------------------------------------
-	// 추가 테스트 17
-	// PAUSED 상태 설비 신규 배정 -> 실패
-	// --------------------------------------------------
+	// 존재하지 않는 설비
 	{
-		FactorySystem pausedSystem;
+		FactorySystem testSystem;
 
-		pausedSystem.registerEquipment(
-			"M20",
-			"Paused Equipment"
-		);
-
-		pausedSystem.createWorkOrder(
+		testSystem.registerEquipment("M20", "Equipment 20");
+		testSystem.createWorkOrder(
 			"WO020",
-			"PART-PAUSED",
-			100,
+			"PART-B",
+			20,
 			WorkOrderPriority::NORMAL
 		);
 
-		// STOPPED -> PAUSED는 금지이므로
-		// STOPPED -> RUNNING -> PAUSED
-		pausedSystem.changeEquipmentStatus(
-			"M20",
-			EquipmentStatus::RUNNING
-		);
+		testSystem.assignEquipmentToWorkOrder("WO020", "M20");
+		testSystem.startWorkOrder("WO020");
 
-		pausedSystem.changeEquipmentStatus(
-			"M20",
-			EquipmentStatus::PAUSED
-		);
-
-		bool test17 =
-			pausedSystem.assignEquipmentToWorkOrder(
+		checkBool(
+			16,
+			"Nonexistent equipment",
+			testSystem.enqueueProductionEvent(
 				"WO020",
-				"M20"
-			);
-
-		printTestResult(
-			17,
-			"Assign PAUSED equipment M20",
-			test17,
+				"M999",
+				5,
+				0
+			),
 			false
 		);
 	}
 
-	// --------------------------------------------------
-	// 추가 테스트 18
-	// WAITING 상태에서 완료 -> 실패
-	// --------------------------------------------------
+	// 배정된 설비와 다른 설비
 	{
-		FactorySystem waitingSystem;
+		FactorySystem testSystem;
 
-		waitingSystem.createWorkOrder(
+		testSystem.registerEquipment("M30", "Equipment 30");
+		testSystem.registerEquipment("M31", "Equipment 31");
+
+		testSystem.createWorkOrder(
 			"WO030",
-			"PART-WAITING",
-			100,
+			"PART-C",
+			20,
+			WorkOrderPriority::NORMAL
+		);
+
+		testSystem.assignEquipmentToWorkOrder("WO030", "M30");
+		testSystem.startWorkOrder("WO030");
+
+		// M31도 RUNNING으로 만들어 설비 상태 때문이 아니라
+		// 배정 불일치 때문에 실패하는지 확인
+		testSystem.changeEquipmentStatus(
+			"M31",
+			EquipmentStatus::RUNNING
+		);
+
+		checkBool(
+			17,
+			"Different equipment from assigned equipment",
+			testSystem.enqueueProductionEvent(
+				"WO030",
+				"M31",
+				5,
+				0
+			),
+			false
+		);
+	}
+
+	// WAITING 작업
+	{
+		FactorySystem testSystem;
+
+		testSystem.registerEquipment("M40", "Equipment 40");
+
+		testSystem.createWorkOrder(
+			"WO040",
+			"PART-D",
+			20,
 			WorkOrderPriority::LOW
 		);
 
-		bool test18 =
-			waitingSystem.completeWorkOrder("WO030");
-
-		printTestResult(
+		checkBool(
 			18,
-			"Complete WAITING work order WO030",
-			test18,
+			"Production event on WAITING work order",
+			testSystem.enqueueProductionEvent(
+				"WO040",
+				"M40",
+				5,
+				0
+			),
 			false
-		);
-
-		printWorkOrderStatusResult(
-			waitingSystem,
-			"WO030",
-			WorkOrderStatus::WAITING
 		);
 	}
 
-	// --------------------------------------------------
-	// 추가 테스트 19
-	// READY 상태에서 일시정지 -> 실패
-	// --------------------------------------------------
+	// READY 작업
 	{
-		FactorySystem readySystem;
+		FactorySystem testSystem;
 
-		readySystem.registerEquipment(
-			"M40",
-			"Ready Equipment"
-		);
+		testSystem.registerEquipment("M50", "Equipment 50");
 
-		readySystem.createWorkOrder(
-			"WO040",
-			"PART-READY",
-			100,
-			WorkOrderPriority::NORMAL
-		);
-
-		readySystem.assignEquipmentToWorkOrder(
-			"WO040",
-			"M40"
-		);
-
-		bool test19 =
-			readySystem.pauseWorkOrder("WO040");
-
-		printTestResult(
-			19,
-			"Pause READY work order WO040",
-			test19,
-			false
-		);
-
-		printWorkOrderStatusResult(
-			readySystem,
-			"WO040",
-			WorkOrderStatus::READY
-		);
-
-		printEquipmentStatusResult(
-			readySystem,
-			"M40",
-			EquipmentStatus::STOPPED
-		);
-	}
-
-	// --------------------------------------------------
-	// 추가 테스트 20
-	// CANCELLED 상태 작업지시에 재배정 -> 실패
-	// --------------------------------------------------
-	{
-		FactorySystem cancelledSystem;
-
-		cancelledSystem.registerEquipment(
-			"M50",
-			"Equipment 50"
-		);
-
-		cancelledSystem.registerEquipment(
-			"M51",
-			"Equipment 51"
-		);
-
-		cancelledSystem.createWorkOrder(
+		testSystem.createWorkOrder(
 			"WO050",
-			"PART-CANCELLED",
-			100,
+			"PART-E",
+			20,
 			WorkOrderPriority::HIGH
 		);
 
-		cancelledSystem.assignEquipmentToWorkOrder(
-			"WO050",
-			"M50"
+		testSystem.assignEquipmentToWorkOrder("WO050", "M50");
+
+		checkBool(
+			19,
+			"Production event on READY work order",
+			testSystem.enqueueProductionEvent(
+				"WO050",
+				"M50",
+				5,
+				0
+			),
+			false
+		);
+	}
+
+	// PAUSED 작업
+	{
+		FactorySystem testSystem;
+
+		testSystem.registerEquipment("M60", "Equipment 60");
+
+		testSystem.createWorkOrder(
+			"WO060",
+			"PART-F",
+			20,
+			WorkOrderPriority::HIGH
 		);
 
-		cancelledSystem.cancelWorkOrder("WO050");
+		testSystem.assignEquipmentToWorkOrder("WO060", "M60");
+		testSystem.startWorkOrder("WO060");
+		testSystem.pauseWorkOrder("WO060");
 
-		bool test20 =
-			cancelledSystem.assignEquipmentToWorkOrder(
-				"WO050",
-				"M51"
-			);
-
-		printTestResult(
+		checkBool(
 			20,
-			"Reassign equipment to CANCELLED WO050",
-			test20,
+			"Production event on PAUSED work order",
+			testSystem.enqueueProductionEvent(
+				"WO060",
+				"M60",
+				5,
+				0
+			),
+			false
+		);
+	}
+
+	// STOPPED 설비
+	{
+		FactorySystem testSystem;
+
+		testSystem.registerEquipment("M70", "Equipment 70");
+
+		testSystem.createWorkOrder(
+			"WO070",
+			"PART-G",
+			20,
+			WorkOrderPriority::NORMAL
+		);
+
+		testSystem.assignEquipmentToWorkOrder("WO070", "M70");
+		testSystem.startWorkOrder("WO070");
+
+		// WorkOrder는 RUNNING으로 둔 채 설비만 STOPPED
+		testSystem.changeEquipmentStatus(
+			"M70",
+			EquipmentStatus::STOPPED
+		);
+
+		checkBool(
+			21,
+			"Production event on STOPPED equipment",
+			testSystem.enqueueProductionEvent(
+				"WO070",
+				"M70",
+				5,
+				0
+			),
+			false
+		);
+	}
+
+	// 잘못된 생산량 / 불량량
+	{
+		FactorySystem testSystem;
+
+		testSystem.registerEquipment("M80", "Equipment 80");
+
+		testSystem.createWorkOrder(
+			"WO080",
+			"PART-H",
+			20,
+			WorkOrderPriority::HIGH
+		);
+
+		testSystem.assignEquipmentToWorkOrder("WO080", "M80");
+		testSystem.startWorkOrder("WO080");
+
+		checkBool(
+			22,
+			"Produced quantity 0",
+			testSystem.enqueueProductionEvent(
+				"WO080",
+				"M80",
+				0,
+				0
+			),
 			false
 		);
 
-		printWorkOrderStatusResult(
-			cancelledSystem,
-			"WO050",
-			WorkOrderStatus::CANCELLED
+		checkBool(
+			23,
+			"Negative produced quantity",
+			testSystem.enqueueProductionEvent(
+				"WO080",
+				"M80",
+				-1,
+				0
+			),
+			false
 		);
+
+		checkBool(
+			24,
+			"Negative defect quantity",
+			testSystem.enqueueProductionEvent(
+				"WO080",
+				"M80",
+				5,
+				-1
+			),
+			false
+		);
+
+		checkBool(
+			25,
+			"Defect quantity greater than produced quantity",
+			testSystem.enqueueProductionEvent(
+				"WO080",
+				"M80",
+				5,
+				6
+			),
+			false
+		);
+
+		checkBool(
+			26,
+			"Production quantity exceeds target",
+			testSystem.enqueueProductionEvent(
+				"WO080",
+				"M80",
+				21,
+				0
+			),
+			false
+		);
+	}
+
+	// ==================================================
+	// 처리 시점 거부 테스트
+	// 큐 등록 후 상태가 달라진 경우
+	// ==================================================
+
+	printSection("Processing-Time Rejection Test");
+
+	{
+		FactorySystem testSystem;
+
+		testSystem.registerEquipment("M90", "Equipment 90");
+
+		testSystem.createWorkOrder(
+			"WO090",
+			"PART-I",
+			20,
+			WorkOrderPriority::HIGH
+		);
+
+		testSystem.assignEquipmentToWorkOrder("WO090", "M90");
+		testSystem.startWorkOrder("WO090");
+
+		// 등록 시점에는 정상
+		checkBool(
+			27,
+			"Enqueue valid event before cancellation",
+			testSystem.enqueueProductionEvent(
+				"WO090",
+				"M90",
+				5,
+				0
+			),
+			true
+		);
+
+		checkInt(
+			"Pending before cancellation",
+			testSystem.getPendingProductionEventCount(),
+			1
+		);
+
+		// 등록 후 작업 취소
+		checkBool(
+			28,
+			"Cancel WO090 after enqueue",
+			testSystem.cancelWorkOrder("WO090"),
+			true
+		);
+
+		// 처리 시점에는 CANCELLED / STOPPED이므로 reject
+		checkBool(
+			29,
+			"Process event after work order cancellation",
+			testSystem.processNextProductionEvent(),
+			false
+		);
+
+		checkInt(
+			"Rejected event count",
+			static_cast<int>(
+				testSystem.getRejectedProductionEvents().size()
+				),
+			1
+		);
+
+		checkInt(
+			"Pending event count after rejection",
+			testSystem.getPendingProductionEventCount(),
+			0
+		);
+
+		const WorkOrder* rejectedWorkOrder =
+			testSystem.findWorkOrder("WO090");
+
+		if (rejectedWorkOrder != nullptr) {
+			checkInt(
+				"Rejected event must not change work order production",
+				rejectedWorkOrder->getProducedQuantity(),
+				0
+			);
+		}
+	}
+
+	// 빈 큐 처리
+	{
+		FactorySystem emptySystem;
+
+		checkBool(
+			30,
+			"Process event from empty queue",
+			emptySystem.processNextProductionEvent(),
+			false
+		);
+	}
+
+	// ==================================================
+	// FIFO 테스트
+	// ==================================================
+
+	printSection("FIFO Test");
+
+	{
+		FactorySystem fifoSystem;
+
+		fifoSystem.registerEquipment(
+			"MF01",
+			"FIFO Equipment"
+		);
+
+		fifoSystem.createWorkOrder(
+			"WOF01",
+			"PART-FIFO",
+			20,
+			WorkOrderPriority::HIGH
+		);
+
+		fifoSystem.assignEquipmentToWorkOrder(
+			"WOF01",
+			"MF01"
+		);
+
+		fifoSystem.startWorkOrder("WOF01");
+
+		// ID 1
+		checkBool(
+			31,
+			"FIFO enqueue event 1 - produced 3",
+			fifoSystem.enqueueProductionEvent(
+				"WOF01",
+				"MF01",
+				3,
+				0
+			),
+			true
+		);
+
+		// ID 2
+		checkBool(
+			32,
+			"FIFO enqueue event 2 - produced 4",
+			fifoSystem.enqueueProductionEvent(
+				"WOF01",
+				"MF01",
+				4,
+				0
+			),
+			true
+		);
+
+		// ID 3
+		checkBool(
+			33,
+			"FIFO enqueue event 3 - produced 5",
+			fifoSystem.enqueueProductionEvent(
+				"WOF01",
+				"MF01",
+				5,
+				0
+			),
+			true
+		);
+
+		checkInt(
+			"FIFO pending count before processing",
+			fifoSystem.getPendingProductionEventCount(),
+			3
+		);
+
+		checkInt(
+			"FIFO processed count",
+			fifoSystem.processAllProductionEvents(),
+			3
+		);
+
+		const vector<ProductionEvent>& history =
+			fifoSystem.getProcessedProductionEvents();
+
+		bool fifoPassed = true;
+
+		if (history.size() != 3) {
+			fifoPassed = false;
+		}
+		else {
+			if (history[0].getEventId() != 1 ||
+				history[0].getProducedQuantity() != 3) {
+				fifoPassed = false;
+			}
+
+			if (history[1].getEventId() != 2 ||
+				history[1].getProducedQuantity() != 4) {
+				fifoPassed = false;
+			}
+
+			if (history[2].getEventId() != 3 ||
+				history[2].getProducedQuantity() != 5) {
+				fifoPassed = false;
+			}
+		}
+
+		checkBool(
+			34,
+			"FIFO processed order must be 1 -> 2 -> 3",
+			fifoPassed,
+			true
+		);
+
+		if (history.size() == 3) {
+			cout << "Actual processing order: "
+				<< history[0].getEventId()
+				<< " -> "
+				<< history[1].getEventId()
+				<< " -> "
+				<< history[2].getEventId()
+				<< "\n\n";
+		}
 	}
 
 	// ==================================================
 	// 최종 결과
 	// ==================================================
+
 	printSection("Test Summary");
 
 	cout << "Passed checks: " << passedCount << "\n";
 	cout << "Failed checks: " << failedCount << "\n";
+
 	cout << "Overall result: "
-		<< (failedCount == 0 ? "ALL TESTS PASSED" : "TEST FAILED")
-		<< "\n";
+		<< (failedCount == 0
+			? "ALL TESTS PASSED"
+			: "TEST FAILED")
+		<< "\n\n";
+
+	cout << "Manual menu tests remaining:\n";
+	cout << "- Enter a character instead of a menu number.\n";
+	cout << "- Enter a character instead of produced quantity.\n";
 
 	return failedCount == 0 ? 0 : 1;
 }

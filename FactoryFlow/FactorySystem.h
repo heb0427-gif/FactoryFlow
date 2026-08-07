@@ -57,7 +57,11 @@ public:
 
 	bool processNextProductionEvent();
 	int processAllProductionEvents(); //큐가 빌 때까지 processNextProductionEvent() 반복 호출 
-	std::vector<ProductionEvent>* getProcessedProductionEvents();
-	std::vector<ProductionEvent>* getRejectedProductionEvents();
+	const std::vector<ProductionEvent>& getProcessedProductionEvents() const;
+	const std::vector<ProductionEvent>& getRejectedProductionEvents() const;
 
+	int getTotalProducedQuantity() const;
+	int getTotalDefectQuantity() const;
+	int getTotalPassQuantity() const;
+	float getOverallDefectRate() const;
 };

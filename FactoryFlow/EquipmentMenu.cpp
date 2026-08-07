@@ -22,7 +22,11 @@ void EquipmentMenu::printMenu() const {
 void EquipmentMenu::printEquipment(const Equipment& equipment) const {
 	cout << "ID: " << equipment.getId() << "\n";
 	cout << "Name: " << equipment.getName() << "\n";
-	cout << "Status: " << equipmentStatusToString(equipment.getStatus()) << "\n\n";
+	cout << "Status: " << equipmentStatusToString(equipment.getStatus()) << "\n";
+	cout << "Total Produced Quantity: " << equipment.getTotalProducedQuantity() << "\n";
+	cout << "Total Pass Quantity: " << equipment.getTotalPassQuantity() << "\n";
+	cout << "Total Defect Quantity: " << equipment.getTotalDefectQuantity() << "\n";
+	cout << "Defect Rate" << equipment.getDefectRate() << "\n\n";
 }
 
 void EquipmentMenu::handleDisplayAllEquipments() const {

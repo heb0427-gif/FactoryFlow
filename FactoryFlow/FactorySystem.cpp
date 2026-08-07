@@ -423,28 +423,38 @@ bool FactorySystem::cancelWorkOrder(const std::string& workOrderId) {
 bool FactorySystem::enqueueProductionEvent(const std::string& workOrderId,
 	const std::string& equipmentId, int produced, int defects) {
 
-	const WorkOrder* workOrder = findWorkOrder(workOrderId);
-	const Equipment* equipment = findEquipment(equipmentId);
+	WorkOrder* workOrder = findWorkOrder(workOrderId);
 
-	if ( (workOrder == nullptr) || 
-		(equipment == nullptr)) {
+	if (workOrder == nullptr)
 		return false;
-	}
 
-	if (workOrder->getAssignedEquipmentId() != productionEvent.getEquipmentId())
-		return rejectProductionEvent(productionEvent);
+	Equipment* equipment = findEquipment(equipmentId);
 
-	if ((workOrder->getStatus() != WorkOrderStatus::RUNNING)
-		|| (equipment->getStatus() != EquipmentStatus::RUNNING)) {
-		return rejectProductionEvent(productionEvent);
-	}
+	if (equipment == nullptr)
+		return false;
 
-	if (!workOrder->canRecordProduction(produced, defects) || 
-		!equipment->canRecordProduction(produced, defects) )
-		return rejectProductionEvent(productionEvent);
+	if (workOrder->getAssignedEquipmentId() != equipmentId)
+		return false;
 
-	ProductionEvent productionEvent(nextProductionEventId, workOrderId, 
-		equipmentId, produced, defects); // 위를 다 통과하면 productionEvent 객체 만듦(아직 실행 전)
+	if (workOrder->getStatus() != WorkOrderStatus::RUNNING)
+		return false;
+
+	if (equipment->getStatus() != EquipmentStatus::RUNNING)
+		return false;
+
+	if (!workOrder->canRecordProduction(produced, defects))
+		return false;
+
+	if (!equipment->canRecordProduction(produced, defects))
+		return false;
+
+	ProductionEvent productionEvent( // 이벤트 객체 만듦
+		nextProductionEventId,
+		workOrderId,
+		equipmentId,
+		produced,
+		defects
+	);
 
 	pendingProductionEvents.push(productionEvent); // 대기큐에 push
 
@@ -478,11 +488,11 @@ bool FactorySystem::processNextProductionEvent() {
 	const string& assignedEquipmentId = workOrder->getAssignedEquipmentId();
 
 	if (assignedEquipmentId != equipment->getId())
-		return false;
+		return rejectProductionEvent(productionEvent);
 
 	if (workOrder->getStatus() != WorkOrderStatus::RUNNING ||
 		equipment->getStatus() != EquipmentStatus::RUNNING)
-		return false;
+		return rejectProductionEvent(productionEvent);
 
 	if (!workOrder->canRecordProduction(
 		productionEvent.getProducedQuantity(),
@@ -491,7 +501,11 @@ bool FactorySystem::processNextProductionEvent() {
 		!equipment->canRecordProduction(
 			productionEvent.getProducedQuantity(),
 			productionEvent.getDefectQuantity()))
-		return false;
+		return rejectProductionEvent(productionEvent);
+
+	// 여기까지는 이벤트 유효성 검사
+
+	// 여기부터는 이미 검증을 통과한 이벤트의 실제 처리
 
 	// 수정 : 각각 성공 여부를 따로 확인
 	bool workOrderRecorded =
@@ -499,25 +513,36 @@ bool FactorySystem::processNextProductionEvent() {
 			productionEvent.getProducedQuantity(),
 			productionEvent.getDefectQuantity());
 
+	if (!workOrderRecorded) {
+		pendingProductionEvents.pop();
+		return false;
+	}
+
 	bool equipmentRecorded =
 		equipment->recordProduction(
 			productionEvent.getProducedQuantity(),
 			productionEvent.getDefectQuantity());
 
-	if (!workOrderRecorded || !equipmentRecorded)
+	if (!equipmentRecorded) {
+		pendingProductionEvents.pop();
 		return false;
+	}
 
 	// 수정 : 설비 종료 → 작업 완료 순으로 변경
 	if (workOrder->isTargetReached()) {
 
-		if (!equipment->changeStatus(EquipmentStatus::STOPPED))
+		if (!equipment->changeStatus(EquipmentStatus::STOPPED)) {
+			pendingProductionEvents.pop();
 			return false;
+		}
+			
 
 		if (!workOrder->complete()) {
 
 			// 수정 : 실패 시 설비 상태 복구
 			equipment->changeStatus(EquipmentStatus::RUNNING);
 
+			pendingProductionEvents.pop();
 			return false;
 		}
 	}
@@ -536,7 +561,7 @@ int FactorySystem::processAllProductionEvents() {
 
 	int processedCountBefore = processedProductionEvents.size();
 
-	while (!isProductionEventQueueEmpty()) {
+	while (!isProductionEventQueueEmpty()) { //pending 큐 확인
 		processNextProductionEvent();
 	}
 
@@ -552,5 +577,43 @@ const vector<ProductionEvent>& FactorySystem::getProcessedProductionEvents() con
 
 const vector<ProductionEvent>& FactorySystem::getRejectedProductionEvents() const {
 	return rejectedProductionEvents;
+}
+
+int FactorySystem::getTotalProducedQuantity() const {
+	// 모든 설비의 누적 생산량을 더해 공장 전체 생산량을 반환
+
+	int totalFactoryProduced = 0;
+
+	for (int i = 0; i < equipments.size(); i++) {
+		totalFactoryProduced += equipments[i].getTotalProducedQuantity();
+	}
+
+	return totalFactoryProduced;
+}
+
+int FactorySystem::getTotalDefectQuantity() const {
+	// 모든 설비의 누적 불량량을 더해 공장 전체 불량량을 반환
+
+	int totalFactoryDefected = 0;
+
+	for (int i = 0; i < equipments.size(); i++) {
+		totalFactoryDefected += equipments[i].getTotalDefectQuantity();
+	}
+
+	return totalFactoryDefected;
+}
+
+int FactorySystem::getTotalPassQuantity() const {
+	// 전체 생산량에서 전체 불량량을 빼 정상 생산량을 반환
+
+	return getTotalProducedQuantity() - getTotalDefectQuantity();
+}
+
+float FactorySystem::getOverallDefectRate() const {
+
+	int totalProducedQuantity = getTotalProducedQuantity();
+	if (totalProducedQuantity == 0) return 0.0;
+
+	return (static_cast<float>(getTotalDefectQuantity()) / totalProducedQuantity) * 100;
 }
 

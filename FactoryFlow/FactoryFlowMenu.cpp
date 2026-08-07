@@ -2,18 +2,21 @@
 #include "FactoryFlowMenu.h"
 #include "EquipmentMenu.h"
 #include "WorkOrderMenu.h"
+#include "ProductionMenu.h"
 using namespace std;
 
 FactoryFlowMenu::FactoryFlowMenu(FactorySystem& system)
-	: system(system), equipmentMenu(system), workOrderMenu(system) {}
+	: system(system), equipmentMenu(system), workOrderMenu(system), 
+	productionMenu(system) {}
 
 void FactoryFlowMenu::printMenu( ) const {
 	cout << "================================\n";
-	cout << "	FactoryFlow v0.2\n";
+	cout << "	FactoryFlow v0.3\n";
 	cout << "================================\n\n";
 
 	cout << "1. Equipment Management\n";
 	cout << "2. Work Order Management\n";
+	cout << "3. Production Management\n";
 	cout << "0. Exit\n\n";
 }
 
@@ -44,10 +47,12 @@ void FactoryFlowMenu::run( ) {
 			equipmentMenu.run(); break;
 		case 2 :
 			workOrderMenu.run(); break;
+		case 3 :
+			productionMenu.run(); break;
 		case 0 :
 			return;
 		default :
-			cout << "Entered wrong number. Enter number from 0 to 2.\n\n";
+			cout << "Entered wrong number. Enter number from 0 to 3.\n\n";
 		}
 	}
 }

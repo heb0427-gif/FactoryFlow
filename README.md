@@ -113,7 +113,23 @@
 
 ---
 
-## 6. 상태 전이 규칙
+## 6. 프로젝트 구조
+
+```text
+FactoryFlow
+├── Equipment
+├── WorkOrder
+├── ProductionEvent
+├── FactorySystem
+├── EquipmentMenu
+├── WorkOrderMenu
+├── ProductionMenu
+└── FactoryFlowMenu
+```
+
+---
+
+## 7. 상태 전이 규칙
 
 ### 설비 상태
 
@@ -135,7 +151,7 @@ WAITING → READY → RUNNING
 
 ---
 
-## 7. 생산 이벤트 처리 흐름
+## 8. 생산 이벤트 처리 흐름
 
 ```text
 생산실적 입력
@@ -155,7 +171,21 @@ WAITING → READY → RUNNING
 
 ---
 
-## 8. 실행 방법
+## 9. 현재 진행률
+
+- ✅ v0.1.0 설비 관리
+- ✅ v0.2.0 작업지시 관리
+- ✅ v0.3.0 생산실적 관리
+- ⬜ v0.4.0 설비 이상 알람
+- ⬜ v0.5.0 파일 저장 / 복구
+- ⬜ v0.6.0 TCP 통신
+- ⬜ v0.7.0 멀티스레드
+- ⬜ v0.8.0 PostgreSQL
+- ⬜ v1.0.0 REST API
+
+---
+
+## 10. 실행 방법
 
 1. Visual Studio에서 `FactoryFlow.sln`을 엽니다.
 2. 프로젝트를 빌드합니다.
@@ -164,13 +194,13 @@ WAITING → READY → RUNNING
 
 ---
 
-## 9. 실행 화면
+## 11. 실행 화면
 
 콘솔 실행 화면은 추후 추가할 예정입니다.
 
 ---
 
-## 10. 테스트
+## 12. 테스트
 
 ### 설비 관리
 
@@ -225,7 +255,7 @@ WAITING → READY → RUNNING
 
 ---
 
-## 11. 문제 해결
+## 13. 문제 해결
 
 ### `cin >>` 이후 `getline()`이 빈 문자열을 읽는 문제
 
@@ -247,7 +277,7 @@ WAITING → READY → RUNNING
 
 ---
 
-## 12. 향후 개선
+## 14. 향후 개선
 
 - 설비 이상 알람
 - 파일 저장 및 복구
@@ -258,7 +288,7 @@ WAITING → READY → RUNNING
 
 ---
 
-## 13. Version History
+## 15. Version History
 
 ### v0.1.0
 

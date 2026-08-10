@@ -558,3 +558,44 @@ float FactorySystem::getOverallDefectRate() const {
 	return (static_cast<float>(getTotalDefectQuantity()) / totalProducedQuantity) * 100;
 }
 
+int FactorySystem::findLotIndex(const std::string& lotId) const {
+	for (int i = 0; i < lots.size(); i++) {
+		if (lots[i].getId() == lotId) return i;
+	}
+	return -1;
+}
+
+bool FactorySystem::registerLot(const std::string& lotId, const std::string& itemCode,
+	LotType type, int quantity) {
+
+	if (lotId.empty()) return false;
+	if (itemCode.empty()) return false;
+	if (quantity < 1) return false;
+	if (findLotIndex(lotId) != -1) return false;
+
+	lots.push_back(Lot(lotId, itemCode, type, quantity));
+	return true;
+}
+
+const Lot* FactorySystem::findLot(const std::string& lotId) const {
+	int lotIndex = findLotIndex(lotId);
+
+	if (lotIndex == -1) return nullptr;
+	return &lots[lotIndex];
+}
+
+Lot* FactorySystem::findLot(const std::string& lotId) {
+	int lotIndex = findLotIndex(lotId);
+
+	if (lotIndex == -1) return nullptr;
+	return &lots[lotIndex];
+}
+
+const vector<Lot>& FactorySystem::getLots() const {
+	return lots; // 반드시 존재하는 객체를 반환할 때는 참조(&) 반환
+}
+
+bool FactorySystem::isLotEmpty() const {
+	return lots.empty();
+}
+

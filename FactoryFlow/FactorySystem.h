@@ -2,6 +2,7 @@
 #include "Equipment.h"
 #include "WorkOrder.h"
 #include "ProductionEvent.h"
+#include "Lot.h"
 #include <string>
 #include <vector>
 #include <queue>
@@ -18,6 +19,8 @@ private:
 	std::vector<ProductionEvent> processedProductionEvents; // 처리된 생산실적들 벡터
 	std::vector<ProductionEvent> rejectedProductionEvents; // 거부된 생산실적들 벡터
 	bool rejectProductionEvent(const ProductionEvent& productionEvent);
+
+	int findLotIndex(const std::string& lotId) const; // 내부 검색용
 
 public:
 	FactorySystem();
@@ -64,4 +67,12 @@ public:
 	int getTotalDefectQuantity() const;
 	int getTotalPassQuantity() const;
 	float getOverallDefectRate() const;
+
+	std::vector<Lot> lots;
+	bool registerLot(const std::string& lotId, const std::string& itemCode,
+		LotType type, int quantity);
+	const Lot* findLot(const std::string& lotId) const;
+	Lot* findLot(const std::string& lotId);
+	const vector<Lot>* getLots() const;
 };
+

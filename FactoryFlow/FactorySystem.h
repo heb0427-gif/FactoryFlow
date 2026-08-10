@@ -3,6 +3,7 @@
 #include "WorkOrder.h"
 #include "ProductionEvent.h"
 #include "Lot.h"
+#include "LotRelation.h"
 #include <string>
 #include <vector>
 #include <queue>
@@ -21,6 +22,11 @@ private:
 	bool rejectProductionEvent(const ProductionEvent& productionEvent);
 
 	int findLotIndex(const std::string& lotId) const; // 내부 검색용
+
+	std::vector<Lot> lots;
+	
+	std::vector<LotRelation> lotRelations;
+	int nextLotRelationId;
 
 public:
 	FactorySystem();
@@ -68,11 +74,18 @@ public:
 	int getTotalPassQuantity() const;
 	float getOverallDefectRate() const;
 
-	std::vector<Lot> lots;
 	bool registerLot(const std::string& lotId, const std::string& itemCode,
 		LotType type, int quantity);
 	const Lot* findLot(const std::string& lotId) const;
 	Lot* findLot(const std::string& lotId);
-	const vector<Lot>* getLots() const;
+	const std::vector<Lot>& getLots() const;
+	bool isLotEmpty() const;
+
+	bool addLotRelation(
+		const std::string& inputLotId,
+		const std::string& outputLotId,
+		const std::string& workOrderId,
+		int usedQuantity
+	);
 };
 

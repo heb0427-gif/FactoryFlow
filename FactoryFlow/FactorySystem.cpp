@@ -4,7 +4,8 @@
 #include "WorkOrder.h"
 using namespace std;
 
-FactorySystem::FactorySystem() : nextProductionEventId(1) {}
+FactorySystem::FactorySystem() : nextProductionEventId(1), 
+	nextLotRelationId(1) {}
 
 int FactorySystem::findEquipmentIndex(const std::string& id) const {
 	for (int i = 0; i < equipments.size(); i++) {
@@ -599,3 +600,36 @@ bool FactorySystem::isLotEmpty() const {
 	return lots.empty();
 }
 
+bool FactorySystem::addLotRelation(
+	const std::string& inputLotId, const std::string& outputLotId,
+	const std::string& workOrderId,	int usedQuantity) {
+
+	const Lot* inputLot = findLot(inputLotId);
+	const Lot* outputLot = findLot(outputLotId);
+	const WorkOrder* workOrder = findWorkOrder(workOrderId);
+	
+	if (inputLot == nullptr) return false;
+	if (outputLot == nullptr) return false;
+	if (workOrder == nullptr) return false;
+
+	if (inputLotId == outputLotId) return false;
+	if (usedQuantity < 1) return false;
+
+	if (!workOrder->hasAssignedEquipment()) return false;
+
+	const string& equipmentId = workOrder->getAssignedEquipmentId();
+
+	LotRelation relation(
+		nextLotRelationId,
+		inputLotId,
+		outputLotId,
+		workOrderId,
+		equipmentId,
+		usedQuantity
+	);
+
+	lotRelations.push_back(relation);
+	nextLotRelationId++;
+
+	return true;
+}

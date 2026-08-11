@@ -97,4 +97,6 @@ public:
 	// 특정 LOT의 모든 상위 원재료/반제품 LOT를 찾아서 LOT ID 목록으로 반환
 	std::vector<std::string> traceBackward(const std::string& lotId) const; // 탑다운
 	std::vector<std::string> traceForward(const std::string& lotId) const; // 바텀업
+
+	const std::vector<LotRelation>& getLotRelations() const;
 };

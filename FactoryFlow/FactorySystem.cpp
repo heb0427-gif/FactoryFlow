@@ -705,3 +705,8 @@ vector<string> FactorySystem::traceForward(const std::string& lotId) const {
 
 	return result;
 }
+
+const std::vector<LotRelation>& FactorySystem::getLotRelations() const {
+	return lotRelations;
+}
+

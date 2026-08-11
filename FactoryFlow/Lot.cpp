@@ -10,7 +10,7 @@ const string& Lot::getId() const { return id; }
 const string& Lot::getItemCode() const { return itemCode; }
 LotType Lot::getType() const { return type; }
 int Lot::getQuantity() const { return quantity; }
-string Lot::lotTypeToString(LotType type) {
+string Lot::lotTypeToString(LotType type) const {
 	switch (type) {
 		case LotType::RAW_MATERIAL:
 			return "RAW_MATERIAL";

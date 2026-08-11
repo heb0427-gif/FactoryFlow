@@ -21,5 +21,5 @@ public:
 	const std::string& getItemCode() const;
 	LotType getType() const;
 	int getQuantity() const;
-	std::string lotTypeToString(LotType type);
+	std::string lotTypeToString(LotType type) const;
 };

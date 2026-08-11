@@ -3,6 +3,7 @@
 #include "EquipmentMenu.h"
 #include "WorkOrderMenu.h"
 #include "ProductionMenu.h"
+#include "LotMenu.h"
 
 class FactoryFlowMenu {
 private :
@@ -11,6 +12,7 @@ private :
 	EquipmentMenu equipmentMenu;
 	WorkOrderMenu workOrderMenu;
 	ProductionMenu productionMenu;
+	LotMenu lotMenu;
 
 	int readInteger ( const std::string& message ) const;
 	void printMenu ( ) const;

@@ -32,13 +32,13 @@ bool Equipment::isValidStatusTransition(EquipmentStatus nextStatus) const {
 
 string equipmentStatusToString(EquipmentStatus status) {
 	if (status == EquipmentStatus::STOPPED)
-		return "STOPPED!";
+		return "STOPPED";
 	if (status == EquipmentStatus::RUNNING)
-		return "RUNNING!";
+		return "RUNNING";
 	if (status == EquipmentStatus::PAUSED)
-		return "PAUSED!";
+		return "PAUSED";
 	if (status == EquipmentStatus::ERROR)
-		return "ERROR!";
+		return "ERROR";
 	return "UNKNOWN!";
 }
 

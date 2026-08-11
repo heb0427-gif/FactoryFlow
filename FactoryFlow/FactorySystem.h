@@ -28,6 +28,14 @@ private:
 	std::vector<LotRelation> lotRelations;
 	int nextLotRelationId;
 
+	void traceBackwardRecursive(const std::string& lotId,
+		std::vector<std::string>& result,
+		std::vector<std::string>& visited) const;
+
+	void traceForwardRecursive(const std::string& lotId,
+		std::vector<std::string>& result,
+		std::vector<std::string>& visited) const;
+
 public:
 	FactorySystem();
 	// 설비 등록 함수
@@ -82,10 +90,11 @@ public:
 	bool isLotEmpty() const;
 
 	bool addLotRelation(
-		const std::string& inputLotId,
-		const std::string& outputLotId,
-		const std::string& workOrderId,
-		int usedQuantity
-	);
-};
+		const std::string& inputLotId, 	const std::string& outputLotId,
+		const std::string& workOrderId,	int usedQuantity);
 
+	// 외부에서 호출하는 함수
+	// 특정 LOT의 모든 상위 원재료/반제품 LOT를 찾아서 LOT ID 목록으로 반환
+	std::vector<std::string> traceBackward(const std::string& lotId) const; // 탑다운
+	std::vector<std::string> traceForward(const std::string& lotId) const; // 바텀업
+};

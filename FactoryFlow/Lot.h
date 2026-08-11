@@ -19,5 +19,7 @@ public:
 		int quantity);
 	const std::string& getId() const;
 	const std::string& getItemCode() const;
-
+	LotType getType() const;
+	int getQuantity() const;
+	std::string lotTypeToString(LotType type);
 };

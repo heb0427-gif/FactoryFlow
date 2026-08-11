@@ -145,6 +145,9 @@
     <ClCompile Include="FactoryFlow.cpp" />
     <ClCompile Include="FactoryFlowMenu.cpp" />
     <ClCompile Include="FactorySystem.cpp" />
+    <ClCompile Include="Lot.cpp" />
+    <ClCompile Include="LotMenu.cpp" />
+    <ClCompile Include="LotRelation.cpp" />
     <ClCompile Include="ProductionEvent.cpp" />
     <ClCompile Include="ProductionMenu.cpp" />
     <ClCompile Include="WorkOrder.cpp" />
@@ -155,6 +158,9 @@
     <ClInclude Include="EquipmentMenu.h" />
     <ClInclude Include="FactoryFlowMenu.h" />
     <ClInclude Include="FactorySystem.h" />
+    <ClInclude Include="Lot.h" />
+    <ClInclude Include="LotMenu.h" />
+    <ClInclude Include="LotRelation.h" />
     <ClInclude Include="ProductionEvent.h" />
     <ClInclude Include="ProductionMenu.h" />
     <ClInclude Include="WorkOrder.h" />

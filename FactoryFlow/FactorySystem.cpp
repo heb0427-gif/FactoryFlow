@@ -633,3 +633,75 @@ bool FactorySystem::addLotRelation(
 
 	return true;
 }
+
+void FactorySystem::traceBackwardRecursive(const std::string& lotId,
+	std::vector<std::string>& result,
+	std::vector<std::string>& visited) const {
+
+	for (int i = 0; i < visited.size(); i++) {
+		// LotId가 visited 안에 이미 있는지 검사
+
+		if (visited[i] == lotId) return; // 있으면
+	}
+
+	visited.push_back(lotId); // 없으면 visited 벡터에 추가되고 다음 루프 때 return
+
+	for (int i = 0; i < lotRelations.size(); i++) {
+
+		if (lotRelations[i].getOutputLotId() == lotId) {
+
+			const string& inputLotId = lotRelations[i].getInputLotId();
+			result.push_back(inputLotId); // 추적하는 LotId를 아웃풋으로 갖고 있는 lotRelation의 인풋 lot id를 결과 벡터에 추가
+
+			traceBackwardRecursive(inputLotId, result, visited);
+		}
+	}
+}
+
+vector<string> FactorySystem::traceBackward(const std::string& lotId) const {
+	
+	vector<string> result;
+	vector<string> visited;
+
+	if (findLot(lotId) == nullptr) return result;
+
+	traceBackwardRecursive(lotId, result, visited);
+
+	return result;
+}
+
+void FactorySystem::traceForwardRecursive(const std::string& lotId,
+	std::vector<std::string>& result,
+	std::vector<std::string>& visited) const {
+
+	for (int i = 0; i < visited.size(); i++) {
+		// LotId가 visited 안에 이미 있는지 검사
+
+		if (visited[i] == lotId) return; // 있으면
+	}
+
+	visited.push_back(lotId); // 없으면 visited 벡터에 추가되고 다음 루프 때 return
+
+	for (int i = 0; i < lotRelations.size(); i++) {
+
+		if (lotRelations[i].getInputLotId() == lotId) {
+
+			const string& outputLotId = lotRelations[i].getOutputLotId();
+			result.push_back(outputLotId); // 추적하는 LotId를 아웃풋으로 갖고 있는 lotRelation의 인풋 lot id를 결과 벡터에 추가
+
+			traceForwardRecursive(outputLotId, result, visited);
+		}
+	}
+}
+
+vector<string> FactorySystem::traceForward(const std::string& lotId) const {
+
+	vector<string> result;
+	vector<string> visited;
+
+	if (findLot(lotId) == nullptr) return result;
+
+	traceForwardRecursive(lotId, result, visited);
+
+	return result;
+}

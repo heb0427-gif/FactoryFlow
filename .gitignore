@@ -74,3 +74,10 @@ x64/
 Debug/
 Release/
 *.user
+
+# NuGet packages
+packages/
+**/packages/
+
+# Archive files
+*.zip

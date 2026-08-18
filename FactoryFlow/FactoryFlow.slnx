@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="../EquipmentSimulator/EquipmentSimulator.vcxproj" Id="a9156718-11c3-4f81-bb79-31760e2e896f" />
   <Project Path="FactoryFlow.vcxproj" Id="3e7cc01e-54dd-4172-8e43-3bad0692a9b6" />
 </Solution>

@@ -51,6 +51,15 @@
     <ClCompile Include="LotMenu.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="TelemetryMessage.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TelemetryParser.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TcpServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Equipment.h">
@@ -86,5 +95,17 @@
     <ClInclude Include="LotMenu.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="TelemetryMessage.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TelemetryParser.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpServer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

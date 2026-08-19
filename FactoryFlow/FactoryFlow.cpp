@@ -1,43 +1,45 @@
 #include <iostream>
 #include <string>
 #include "TcpServer.h"
+#include "DatabaseManager.h"
+#include "TelemetryMessage.h"
 
 using namespace std;
 
 int main() {
 
-	TcpServer server;
+	DatabaseManager dbManager;
 
-	cout << "========================================\n";
-	cout << "FactoryFlow TCP Server Test\n";
-	cout << "========================================\n\n";
+	// 1. PostgreSQL 연결
+	if (!dbManager.connect(
+		"host=127.0.0.1 port=5432 dbname=factoryflow user=postgres password=eunbin0427*")) {
 
-	cout << "Waiting for client on port 9000...\n";
-
-	// start() 내부의 accept()에서
-	// EquipmentSimulator가 접속할 때까지 기다림
-	if (!server.start(9000)) {
-		cout << "Failed to start TCP server.\n";
+		cout << "Database connection failed.\n";
 		return 1;
 	}
 
-	cout << "Client connected.\n\n";
+	cout << "Database connected.\n";
 
-	// 같은 TCP 연결에서 JSON 3건 수신
-	for (int i = 1; i <= 3; i++) {
+	// 2. 테스트용 TelemetryMessage 생성
+	TelemetryMessage message(
+		"M01",
+		"WO001",
+		"2026-08-19T19:10:00",
+		"RUNNING",
+		72.4,
+		1.82,
+		5,
+		1,
+		"LOT-001"
+	);
 
-		string message;
-
-		if (!server.receiveMessage(message)) {
-			cout << "Failed to receive message.\n";
-			return 1;
-		}
-
-		cout << "[Received " << i << "]\n";
-		cout << message << "\n\n";
+	// 3. telemetry 테이블에 저장
+	if (!dbManager.saveTelemetry(message)) {
+		cout << "Failed to save telemetry.\n";
+		return 1;
 	}
 
-	cout << "All telemetry messages received.\n";
+	cout << "Telemetry saved.\n";
 
 	return 0;
 }

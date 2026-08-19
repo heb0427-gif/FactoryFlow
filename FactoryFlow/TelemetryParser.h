@@ -11,3 +11,4 @@ public:
 	// C++ TelemetryMessage를 TCP로 보낼 JSON 문자열로 바꾼다.
 	std::string toJson(const TelemetryMessage& message) const;
 };
+

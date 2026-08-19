@@ -140,6 +140,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DatabaseManager.cpp" />
     <ClCompile Include="Equipment.cpp" />
     <ClCompile Include="EquipmentMenu.cpp" />
     <ClCompile Include="FactoryFlow.cpp" />
@@ -157,6 +158,7 @@
     <ClCompile Include="WorkOrderMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DatabaseManager.h" />
     <ClInclude Include="Equipment.h" />
     <ClInclude Include="EquipmentMenu.h" />
     <ClInclude Include="FactoryFlowMenu.h" />

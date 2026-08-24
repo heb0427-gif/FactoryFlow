@@ -1,6 +1,6 @@
+#include <cstdlib>
 #include <iostream>
 #include <string>
-
 #include "FactorySystem.h"
 #include "DatabaseManager.h"
 #include "TelemetryProcessor.h"
@@ -78,12 +78,32 @@ int main() {
 
 	DatabaseManager databaseManager;
 
+	// 환경변수에서 PostgreSQL 비밀번호 읽기
+	char* dbPassword = nullptr;
+	size_t passwordLength = 0;
+
+	_dupenv_s(
+		&dbPassword,
+		&passwordLength,
+		"FACTORYFLOW_DB_PASSWORD"
+	);
+
+	// 환경변수를 찾지 못한 경우
+	if (dbPassword == nullptr) {
+		cout << "Database password environment variable not found.\n";
+		return 1;
+	}
+
+	// DB 연결 문자열 생성
 	string connectionString =
 		"host=127.0.0.1 "
 		"port=5432 "
 		"dbname=factoryflow "
 		"user=postgres "
-		"password=MY_PASSWORD";
+		"password=" + string(dbPassword);
+
+	// _dupenv_s가 할당한 메모리 해제
+	free(dbPassword);
 
 	if (!databaseManager.connect(connectionString)) {
 		cout << "Database connection failed.\n";

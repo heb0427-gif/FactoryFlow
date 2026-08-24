@@ -3,6 +3,7 @@
 #include <memory>
 #include <pqxx/pqxx>
 #include "TelemetryMessage.h"
+#include "FactorySystem.h"
 
 class DatabaseManager {
 private:
@@ -12,4 +13,8 @@ public:
 	bool connect(const std::string& connectionString); // DB 연결
 
 	bool saveTelemetry(const TelemetryMessage& message);
+	bool upsertEquipment(const Equipment& equipment);
+	bool upsertWorkOrder(const WorkOrder& workOrder);
+	bool saveAlarm(const TelemetryMessage& message,
+		const std::string& alarmMessage);
 };

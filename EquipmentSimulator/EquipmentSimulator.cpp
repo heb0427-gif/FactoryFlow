@@ -33,7 +33,7 @@ int main() {
 		R"({"equipmentId":"M01","workOrderId":"WO001","timestamp":"2026-08-18T18:00:01","status":"RUNNING","temperature":73.1,"vibration":1.85,"productionCount":5,"defectCount":0,"lotId":"LOT-001"})";
 
 	string json3 =
-		R"({"equipmentId":"M01","workOrderId":"WO001","timestamp":"2026-08-18T18:00:02","status":"RUNNING","temperature":72.8,"vibration":1.79,"productionCount":5,"defectCount":1,"lotId":"LOT-001"})";
+		R"({"equipmentId":"M01","workOrderId":"WO001","timestamp":"2026-08-18T18:00:02","status":"RUNNING","temperature":95.2,"vibration":1.79,"productionCount":5,"defectCount":1,"lotId":"LOT-001"})";
 
 
 	// ========================================

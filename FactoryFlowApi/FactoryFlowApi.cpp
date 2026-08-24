@@ -1,20 +1,235 @@
-﻿// FactoryFlowApi.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
-//
-
+﻿#include <crow.h>
+#include <cstdlib>
 #include <iostream>
+#include <string>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+#include "DatabaseManager.h"
+
+using namespace std;
+
+int main() {
+
+	// ========================================
+	// 1. PostgreSQL 연결
+	// ========================================
+
+	DatabaseManager databaseManager;
+
+	char* dbPassword = nullptr;
+	size_t passwordLength = 0;
+
+	_dupenv_s(
+		&dbPassword,
+		&passwordLength,
+		"FACTORYFLOW_DB_PASSWORD"
+	);
+
+	if (dbPassword == nullptr) {
+		cout << "Database password environment variable not found.\n";
+		return 1;
+	}
+
+	string connectionString =
+		"host=127.0.0.1 "
+		"port=5432 "
+		"dbname=factoryflow "
+		"user=postgres "
+		"password=" + string(dbPassword);
+
+	free(dbPassword);
+
+	if (!databaseManager.connect(connectionString)) {
+		cout << "Database connection failed.\n";
+		return 1;
+	}
+
+	cout << "Database connected.\n";
+
+
+	// ========================================
+	// 2. Crow HTTP 서버 생성
+	// ========================================
+
+	crow::SimpleApp app;
+
+
+	// ========================================
+	// 3. GET /api/health
+	// ========================================
+
+	CROW_ROUTE(app, "/api/health")
+		([]() {
+		return R"({"status":"ok"})";
+			});
+
+
+	// ========================================
+	// 4. GET /api/equipments
+	// ========================================
+
+	CROW_ROUTE(app, "/api/equipments")
+		([&databaseManager]() {
+
+		try {
+			string json =
+				databaseManager.getEquipmentsJson();
+
+			crow::response response(200, json);
+
+			response.set_header(
+				"Content-Type",
+				"application/json"
+			);
+
+			return response;
+		}
+		catch (const exception& e) {
+			cout << "GET /api/equipments Error: "
+				<< e.what() << "\n";
+
+			return crow::response(
+				500,
+				R"({"error":"Database error"})"
+			);
+		}
+			});
+
+
+	// ========================================
+	// 5. GET /api/work-orders
+	// ========================================
+
+	CROW_ROUTE(app, "/api/work-orders")
+		([&databaseManager]() {
+
+		try {
+			string json =
+				databaseManager.getWorkOrdersJson();
+
+			crow::response response(200, json);
+
+			response.set_header(
+				"Content-Type",
+				"application/json"
+			);
+
+			return response;
+		}
+		catch (const exception& e) {
+			cout << "GET /api/work-orders Error: "
+				<< e.what() << "\n";
+
+			return crow::response(
+				500,
+				R"({"error":"Database error"})"
+			);
+		}
+			});
+
+
+	// ========================================
+	// 6. GET /api/lots
+	// ========================================
+
+	CROW_ROUTE(app, "/api/lots")
+		([&databaseManager]() {
+
+		try {
+			string json =
+				databaseManager.getLotsJson();
+
+			crow::response response(200, json);
+
+			response.set_header(
+				"Content-Type",
+				"application/json"
+			);
+
+			return response;
+		}
+		catch (const exception& e) {
+			cout << "GET /api/lots Error: "
+				<< e.what() << "\n";
+
+			return crow::response(
+				500,
+				R"({"error":"Database error"})"
+			);
+		}
+			});
+
+
+	// ========================================
+	// 7. GET /api/alarms
+	// ========================================
+
+	CROW_ROUTE(app, "/api/alarms")
+		([&databaseManager]() {
+
+		try {
+			string json =
+				databaseManager.getAlarmsJson();
+
+			crow::response response(200, json);
+
+			response.set_header(
+				"Content-Type",
+				"application/json"
+			);
+
+			return response;
+		}
+		catch (const exception& e) {
+			cout << "GET /api/alarms Error: "
+				<< e.what() << "\n";
+
+			return crow::response(
+				500,
+				R"({"error":"Database error"})"
+			);
+		}
+			});
+
+
+	// ========================================
+	// 8. GET /api/summary
+	// ========================================
+
+	CROW_ROUTE(app, "/api/summary")
+		([&databaseManager]() {
+
+		try {
+			string json =
+				databaseManager.getSummaryJson();
+
+			crow::response response(200, json);
+
+			response.set_header(
+				"Content-Type",
+				"application/json"
+			);
+
+			return response;
+		}
+		catch (const exception& e) {
+			cout << "GET /api/summary Error: "
+				<< e.what() << "\n";
+
+			return crow::response(
+				500,
+				R"({"error":"Database error"})"
+			);
+		}
+			});
+
+
+	// ========================================
+	// 9. HTTP 서버 실행
+	// ========================================
+
+	cout << "FactoryFlow API running on port 8080...\n";
+
+	app.port(8080).run();
+
+	return 0;
 }
-
-// 프로그램 실행: <Ctrl+F5> 또는 [디버그] > [디버깅하지 않고 시작] 메뉴
-// 프로그램 디버그: <F5> 키 또는 [디버그] > [디버깅 시작] 메뉴
-
-// 시작을 위한 팁: 
-//   1. [솔루션 탐색기] 창을 사용하여 파일을 추가/관리합니다.
-//   2. [팀 탐색기] 창을 사용하여 소스 제어에 연결합니다.
-//   3. [출력] 창을 사용하여 빌드 출력 및 기타 메시지를 확인합니다.
-//   4. [오류 목록] 창을 사용하여 오류를 봅니다.
-//   5. [프로젝트] > [새 항목 추가]로 이동하여 새 코드 파일을 만들거나, [프로젝트] > [기존 항목 추가]로 이동하여 기존 코드 파일을 프로젝트에 추가합니다.
-//   6. 나중에 이 프로젝트를 다시 열려면 [파일] > [열기] > [프로젝트]로 이동하고 .sln 파일을 선택합니다.

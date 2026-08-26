@@ -8,20 +8,37 @@ bool TcpClient::connectToServer(
 	const std::string& host, unsigned short port) {
 
 	try {
-		/* make_address()가 host 문자열을 boost가 사용할 수 있는
-		IP 주소 객체로 바꿔줌 */
+		/*
+		resolver는 host 이름을 실제 접속 가능한 IP 주소로 변환한다.
 
-		boost::asio::ip::address address = boost::asio::ip::make_address(host);
+		예:
+		altaria.proxy.rlwy.net
+				↓
+			DNS 조회
+				↓
+			실제 IP 주소
+		*/
 
-		// 내가 접속할 상대 위치 정보를 가진 TCP IPv4 endpoint 생성
-		boost::asio::ip::tcp::endpoint endpoint(address, port);
+		boost::asio::ip::tcp::resolver resolver(ioContext);
 
-		// 그럼 서버에서는 acceptor.accept(socket) 이 기다리고 있음.
+		/*
+		resolve()에
+		1. 접속할 서버 주소
+		2. 접속할 포트
+		를 전달한다.
 
-		// 클라이언트와 서버의 실제 연결
-		socket.connect(endpoint); // socket아, 이 endpoint에 있는 서버로 연결해
+		port는 숫자이므로 문자열로 변환한다.
+		*/
+		auto endpoints = resolver.resolve(
+			host,
+			std::to_string(port)
+		);
 
-		// 연결 성공 후에는 클라이언트/서버 모두 자기 socket을 통해 데이터를 주고 받음
+		/*
+		DNS 조회 결과로 얻은 endpoint들 중
+		연결 가능한 endpoint에 socket을 연결한다.
+		*/
+		boost::asio::connect(socket, endpoints);
 
 		return true;
 	}

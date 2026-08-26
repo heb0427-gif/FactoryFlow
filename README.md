@@ -1,436 +1,708 @@
 # FactoryFlow
 
-## 1. 프로젝트 소개
+> C++ 기반 제조 설비 데이터 수집 및 생산 관리 시스템
 
-가상의 제조 설비와 작업지시, 생산실적, LOT 추적성을 관리하는 C++ 콘솔 기반 미니 MES입니다.
+FactoryFlow는 제조 설비에서 발생하는 Telemetry 데이터를 **TCP 통신으로 수집하고 검증·처리하여 PostgreSQL에 저장한 뒤, C++ REST API와 React Dashboard를 통해 조회하는 End-to-End 제조 데이터 처리 시스템**입니다.
 
----
+단순 CRUD 구현에 그치지 않고,
 
-## 2. 개발 목적
+**Equipment Simulator → TCP Collector → Domain Logic → PostgreSQL → REST API → React Dashboard**
 
-- C++ 객체지향 설계 연습
-- 자료구조를 실제 프로그램에 적용
-- 제조업 생산관리 흐름 이해
-- 유지보수가 쉬운 객체 중심 설계 경험
+로 이어지는 전체 데이터 흐름을 직접 구현하고 실제 배포 환경까지 연결하는 것을 목표로 개발했습니다.
 
----
+### 🔗 Live Demo
 
-## 3. 주요 기능 계획
-
-- 설비 관리
-- 작업지시 관리
-- 생산 이벤트 큐
-- 생산 실적 및 불량률 계산
-- LOT 추적성 관리
-- 설비 이상 알람
-- 파일 저장 및 복구
+[FactoryFlow Dashboard](https://factory-flow-rlabd9i56-factoryflow1.vercel.app/)
 
 ---
 
-## 4. 현재 구현 범위
+## 🖥 Dashboard
 
-### 설비 관리
+![FactoryFlow Dashboard](docs/images/dashboard.png)
 
-- 설비 등록
-- 설비 전체 조회
-- 설비 상세 조회
-- 설비 상태 변경
-- 설비 ID 중복 방지
-- 설비 상태 전이 검증
-- 설비별 누적 생산실적 관리
-- 잘못된 사용자 입력 처리
+실제 배포 환경에서 생산 및 설비 데이터를 조회할 수 있습니다.
 
-### 작업지시 관리
+- Total Produced
+- Total Defect
+- Defect Rate
+- Equipment Count
+- Alarm Count
+- Recent Alarms
 
-- 작업지시 생성
-- 작업지시 전체 조회
-- 작업지시 상세 조회
-- 작업지시에 설비 배정
-- 작업 시작 / 일시정지 / 재개
-- 작업 완료 / 취소
-- 설비와 작업지시 상태 동기화
-- 설비 중복 배정 방지
-- 작업지시별 생산실적 관리
-- 작업 진행률 및 불량률 계산
+설비에서 수신한 Telemetry의 온도가 설정한 임계값 이상이면 Alarm을 생성하고 Dashboard의 Recent Alarms에서 확인할 수 있습니다.
 
-### 생산실적 관리
-
-- 생산 이벤트 등록
-- FIFO 생산 이벤트 큐
-- 이벤트 한 건 처리
-- 이벤트 전체 처리
-- 정상 처리 이벤트 이력
-- 거부 이벤트 이력
-- 공장 전체 생산 현황 조회
-
-### LOT 추적성 관리
-
-- 원자재 / 반제품 / 완제품 LOT 등록
-- LOT 전체 및 상세 조회
-- 작업지시 기반 LOT 생산 관계 기록
-- LOT 관계 전체 조회
-- 완제품에서 원재료 방향으로 역추적
-- 원재료에서 영향 제품 방향으로 정방향 추적
-- 재귀 기반 다단계 LOT 탐색
+> 현재 `90°C` 기준은 실제 산업 안전 기준이 아닌 시스템 동작 검증을 위해 설정한 데모 임계값입니다.
 
 ---
 
-## 5. 코드 구조
-
-### Equipment
-
-- 설비 ID, 이름, 상태를 관리합니다.
-- 설비 상태 전이 규칙을 검증합니다.
-- 설비별 누적 생산실적을 관리합니다.
-
-### WorkOrder
-
-- 작업지시 ID, 제품 정보, 목표 수량, 우선순위를 관리합니다.
-- 작업지시 상태 전이 규칙을 검증합니다.
-- 작업지시별 생산실적과 진행률을 관리합니다.
-
-### ProductionEvent
-
-- 생산실적 한 건을 저장하는 객체입니다.
-- 이벤트 ID, 작업지시 ID, 설비 ID, 생산 수량, 불량 수량을 보관합니다.
-
-### Lot
-
-- 하나의 LOT 정보를 관리합니다.
-- LOT ID, 품목 코드, LOT 종류, 수량을 보관합니다.
-- LOT 종류는 원자재, 반제품, 완제품으로 구분합니다.
-
-### LotRelation
-
-- LOT와 LOT 사이의 생산 관계 한 건을 관리합니다.
-- 입력 LOT, 출력 LOT, 작업지시, 설비, 사용 수량을 기록합니다.
-
-### FactorySystem
-
-- 등록된 설비와 작업지시를 관리합니다.
-- 설비와 작업지시 간 업무 규칙을 처리합니다.
-- 생산 이벤트 큐를 관리합니다.
-- 생산 이벤트 처리 및 공장 전체 생산 현황을 관리합니다.
-- LOT와 LOT 생산 관계를 관리합니다.
-- LOT 역추적 및 정방향 추적을 수행합니다.
-
-### EquipmentMenu
-
-- 설비 관리 콘솔 메뉴를 담당합니다.
-
-### WorkOrderMenu
-
-- 작업지시 관리 콘솔 메뉴를 담당합니다.
-
-### ProductionMenu
-
-- 생산 이벤트 등록, 처리, 조회를 담당합니다.
-
-### LotMenu
-
-- LOT 등록 및 조회를 담당합니다.
-- LOT 생산 관계 등록 및 조회를 담당합니다.
-- LOT 역추적 및 정방향 추적 결과를 출력합니다.
-
-### FactoryFlowMenu
-
-- 상위 메뉴를 제공합니다.
-- 설비 관리, 작업지시 관리, 생산 관리, LOT 추적성 관리 메뉴를 연결합니다.
-
-### FactoryFlow.cpp
-
-- 프로그램의 진입점입니다.
-
----
-
-## 6. 프로젝트 구조
+# 🏗 System Architecture
 
 ```text
-FactoryFlow
-├── Equipment
-├── WorkOrder
-├── ProductionEvent
-├── Lot
-├── LotRelation
-├── FactorySystem
-├── EquipmentMenu
-├── WorkOrderMenu
-├── ProductionMenu
-├── LotMenu
-└── FactoryFlowMenu
+┌─────────────────────────────┐
+│     Equipment Simulator     │
+│            C++              │
+└──────────────┬──────────────┘
+               │
+               │ TCP / JSON
+               ▼
+┌─────────────────────────────┐
+│     FactoryFlowCollector    │
+│      C++ / Boost.Asio       │
+│                             │
+│     TelemetryParser         │
+│            ↓                │
+│     TelemetryProcessor      │
+│            ↓                │
+│       FactorySystem         │
+│            ↓                │
+│      DatabaseManager        │
+└──────────────┬──────────────┘
+               │
+               │ libpqxx / SQL
+               ▼
+┌─────────────────────────────┐
+│         PostgreSQL          │
+│                             │
+│ Equipment / WorkOrder       │
+│ Production / LOT            │
+│ Telemetry / Alarm           │
+└──────────────┬──────────────┘
+               │
+               │ SELECT
+               ▼
+┌─────────────────────────────┐
+│       FactoryFlowApi        │
+│    C++ / cpp-httplib        │
+└──────────────┬──────────────┘
+               │
+               │ HTTP / JSON
+               ▼
+┌─────────────────────────────┐
+│       React Dashboard       │
+│        React + Vite         │
+└─────────────────────────────┘
+```
+
+## Deployment Architecture
+
+```text
+Local
+│
+└── EquipmentSimulator
+          │
+          │ TCP / JSON
+          ▼
+Railway
+├── FactoryFlowCollector
+│      └── TCP Proxy
+│
+├── FactoryFlowApi
+│      └── HTTPS Public Endpoint
+│
+└── PostgreSQL
+          │
+          │ HTTP / JSON
+          ▼
+Vercel
+└── React + Vite Dashboard
 ```
 
 ---
 
-## 7. 상태 전이 규칙
+# 🔄 Data Flow
 
-### 설비 상태
-
-- STOPPED → RUNNING
-- RUNNING → PAUSED, STOPPED, ERROR
-- PAUSED → RUNNING, STOPPED, ERROR
-- ERROR → STOPPED
-
-허용되지 않은 상태 전이는 모두 거부합니다.
-
-### 작업지시 상태
+FactoryFlow의 핵심은 설비에서 생성된 데이터가 사용자 화면까지 전달되는 전체 흐름입니다.
 
 ```text
-WAITING → READY → RUNNING
-                  ├─ PAUSED → RUNNING
-                  ├─ COMPLETED
-                  └─ CANCELLED
+Equipment Simulator
+        │
+        │ Telemetry JSON 생성
+        ▼
+TCP Client
+        │
+        │ TCP Stream
+        ▼
+TCP Collector
+        │
+        ▼
+TelemetryParser
+        │
+        │ JSON Parsing
+        ▼
+TelemetryProcessor
+        │
+        ├── Equipment 검증
+        ├── WorkOrder 검증
+        ├── ProductionEvent 생성
+        ├── 생산 실적 처리
+        └── Alarm 조건 검사
+        │
+        ▼
+FactorySystem
+        │
+        ▼
+DatabaseManager
+        │
+        │ libpqxx / Transaction
+        ▼
+PostgreSQL
+        │
+        ▼
+FactoryFlowApi
+        │
+        │ HTTP / JSON
+        ▼
+React Dashboard
+```
+
+이를 통해 하나의 Telemetry가 **수신 → 파싱 → 검증 → 비즈니스 로직 처리 → DB 저장 → API 조회 → 웹 표시**까지 이어지는 과정을 구현했습니다.
+
+---
+
+# 📌 Main Features
+
+## 1. Equipment Management
+
+설비의 기본 정보와 상태를 관리합니다.
+
+```text
+STOPPED
+   │
+   ▼
+RUNNING ──────► ERROR
+   │              │
+   ▼              ▼
+PAUSED ───────► STOPPED
+```
+
+허용된 상태 전이만 수행할 수 있도록 도메인 로직에서 검증하며 잘못된 상태 변경을 차단합니다.
+
+### Equipment Dashboard
+
+![FactoryFlow Equipments](docs/images/equipments.png)
+
+Dashboard에서는 설비별 다음 정보를 조회할 수 있습니다.
+
+- Equipment ID
+- Name
+- Status
+- Produced Count
+- Defect Count
+
+---
+
+## 2. Work Order Management
+
+설비에서 수행되는 생산 작업을 Work Order 단위로 관리합니다.
+
+- 작업지시 생성 및 조회
+- Equipment와 Work Order 연결
+- 작업 상태 관리
+- 생산 실적과 Work Order 연계
+
+---
+
+## 3. Production Processing
+
+Telemetry에서 전달된 생산 데이터를 `ProductionEvent`로 변환하여 처리합니다.
+
+```text
+Telemetry
+    ↓
+Equipment / WorkOrder Validation
+    ↓
+ProductionEvent Queue
+    ↓
+FactorySystem
+    ↓
+Production Result Update
+```
+
+생산 처리 결과에 따라 Equipment와 Work Order의 생산량 및 불량 수량을 갱신합니다.
+
+---
+
+## 4. LOT Traceability
+
+원자재와 생산품을 LOT 단위로 관리하고 LOT 간 관계를 추적합니다.
+
+```text
+INPUT LOT
+    │
+    ▼
+Production
+    │
+    ▼
+OUTPUT LOT
+```
+
+LOT 관계에 대해 다음 기능을 구현했습니다.
+
+- INPUT / OUTPUT LOT 관리
+- LOT 관계 저장
+- Forward Trace
+- Backward Trace
+- 재귀 기반 관계 탐색
+- `visited` 검사를 통한 순환 탐색 방지
+
+### LOT Dashboard
+
+![FactoryFlow Lots](docs/images/lots.png)
+
+Dashboard에서는 LOT별 ID, Item Code, Type, Quantity를 조회할 수 있습니다.
+
+---
+
+## 5. TCP Telemetry Collection
+
+Equipment Simulator가 설비 Telemetry를 JSON 형태로 생성하여 TCP Collector에 전달합니다.
+
+```json
+{
+  "equipmentId": "M01",
+  "workOrderId": "WO001",
+  "timestamp": "2026-08-26T14:00:03",
+  "status": "RUNNING",
+  "temperature": 95.2,
+  "vibration": 1.79,
+  "productionCount": 5,
+  "defectCount": 1,
+  "lotId": "LOT-001"
+}
+```
+
+Collector는 메시지를 수신한 후 JSON Parsing과 데이터 검증을 수행하고 유효한 데이터만 생산 처리 흐름으로 전달합니다.
+
+---
+
+## 6. Alarm Detection
+
+Telemetry 처리 과정에서 온도가 설정된 임계값 이상인지 검사합니다.
+
+```cpp
+return message.getTemperature() >= 90.0;
+```
+
+조건을 만족하면 PostgreSQL에 다음 Alarm을 저장합니다.
+
+```text
+HIGH TEMPERATURE
+```
+
+저장된 Alarm은 REST API를 통해 React Dashboard에서 조회할 수 있습니다.
+
+---
+
+# 🌐 REST API
+
+별도의 **C++ / cpp-httplib 기반 Read-only REST API**를 구현하여 PostgreSQL 데이터를 Frontend에 제공합니다.
+
+```http
+GET /api/health
+GET /api/equipments
+GET /api/work-orders
+GET /api/lots
+GET /api/alarms
+GET /api/summary
+```
+
+React Dashboard는 API를 주기적으로 호출하여 최신 생산 현황을 표시합니다.
+
+---
+
+# 🗄 Database
+
+PostgreSQL과 `libpqxx`를 이용해 연동했습니다.
+
+주요 데이터:
+
+```text
+Equipment
+WorkOrder
+Production
+LOT
+LOT Relation
+Telemetry
+Alarm
+```
+
+DB 변경 작업은 transaction 단위로 처리합니다.
+
+```cpp
+pqxx::work transaction(*connection);
+
+// SQL
+
+transaction.commit();
+```
+
+Equipment와 Work Order의 현재 상태는 갱신하고, Telemetry와 Alarm은 이력 데이터로 저장하도록 역할을 구분했습니다.
+
+---
+
+# 🛠 Tech Stack
+
+| Category | Technology | Usage |
+|---|---|---|
+| Language | C++17 | Domain Logic, TCP Collector, REST API |
+| Networking | Boost.Asio | TCP Client / Server |
+| JSON | nlohmann/json | Telemetry Serialization / Parsing |
+| Database | PostgreSQL | Manufacturing Data Storage |
+| DB Client | libpqxx | C++ ↔ PostgreSQL |
+| REST API | cpp-httplib | Read-only HTTP API |
+| Frontend | React | Dashboard UI |
+| Build Tool | Vite | Frontend Build |
+| Build Tool | CMake | C++ Deployment Build |
+| Container | Docker | Railway Deployment |
+| Hosting | Railway | Collector / API / PostgreSQL |
+| Hosting | Vercel | React Dashboard |
+| Version Control | Git / GitHub | Source & Version Management |
+| IDE | Visual Studio / VS Code | Development |
+
+---
+
+# 📂 Project Structure
+
+```text
+FactoryFlow/
+│
+├── FactoryFlow/
+│   ├── Equipment.*
+│   ├── WorkOrder.*
+│   ├── ProductionEvent.*
+│   ├── Lot.*
+│   ├── LotRelation.*
+│   ├── FactorySystem.*
+│   ├── TelemetryMessage.*
+│   ├── TelemetryParser.*
+│   ├── TelemetryProcessor.*
+│   ├── TcpServer.*
+│   ├── DatabaseManager.*
+│   ├── FactoryFlow.cpp
+│   ├── CMakeLists.txt
+│   └── Dockerfile
+│
+├── EquipmentSimulator/
+│   └── TCP Telemetry Client
+│
+├── FactoryFlowApi/
+│   └── C++ Read-only REST API
+│
+├── database/
+│   └── PostgreSQL Schema / SQL
+│
+├── factoryflow-dashboard/
+│   └── React + Vite Dashboard
+│
+├── docs/
+│   └── images/
+│       ├── dashboard.png
+│       ├── equipments.png
+│       └── lots.png
+│
+└── README.md
 ```
 
 ---
 
-## 8. 생산 이벤트 처리 흐름
+# 🔧 Troubleshooting
+
+프로젝트에서는 정상적인 기능 구현뿐 아니라 로컬 환경에서 작성한 여러 컴포넌트를 실제 네트워크 및 배포 환경에서 연결하는 과정까지 진행했습니다.
+
+## 1. Railway TCP hostname 연결 실패
+
+### Problem
+
+로컬에서는 IP 주소를 직접 사용했지만 Railway 배포 후 TCP Proxy는 다음과 같은 hostname 형태로 제공되었습니다.
 
 ```text
-생산실적 입력
-        ↓
-대기 큐 등록
-        ↓
-작업지시 및 설비 검증
-        ↓
-작업지시 실적 갱신
-        ↓
-설비 누적 실적 갱신
-        ↓
-목표 수량 확인
-        ↓
-작업 자동 완료 및 설비 정지
+altaria.proxy.rlwy.net
 ```
 
----
+초기 TCP Client는 `make_address()`를 사용했습니다.
 
-## 9. LOT Traceability
+```cpp
+boost::asio::ip::make_address(host);
+```
 
-### 주요 기능
+`make_address()`는 IP 주소 문자열을 파싱하기 위한 방식이므로 hostname을 직접 처리할 수 없었습니다.
 
-- 원자재 / 반제품 / 완제품 LOT 등록
-- 작업지시 기반 LOT 생산 관계 기록
-- LOT 관계 조회
-- 완제품 → 원재료 역추적
-- 원재료 → 영향 제품 정방향 추적
-- 재귀 기반 다단계 LOT 탐색
+### Solution
 
-### LOT 관계 예
+DNS Resolver를 이용하여 hostname을 endpoint로 resolve한 뒤 TCP 연결을 수행하도록 변경했습니다.
 
 ```text
-RAW-001 ─┐
-         ├──→ SEMI-001 ───→ FIN-001
-RAW-002 ─┘
+Hostname
+    ↓
+DNS Resolver
+    ↓
+Endpoint
+    ↓
+TCP Connection
 ```
 
-각 LOT 사이의 생산 관계에는 해당 생산에 사용된 작업지시, 설비, 사용 수량을 함께 기록합니다.
+### Learned
 
-### 역추적
+로컬 IP 기반 통신에서 실제 인터넷 환경으로 확장하면서 IP 주소와 hostname의 차이, DNS Resolution이 TCP 연결 과정에서 담당하는 역할을 확인했습니다.
 
-완제품 LOT에서 시작하여 해당 제품 생산에 사용된 반제품과 원재료 LOT를 역방향으로 추적합니다.
+---
+
+## 2. TCP Message Framing
+
+### Problem
+
+TCP는 메시지 기반이 아니라 byte stream 기반이므로 한 번의 `write()`가 상대방의 한 번의 `read()`와 대응된다는 보장이 없습니다.
+
+여러 JSON Telemetry를 연속 전송하면 서버가 각 메시지의 끝을 구분할 기준이 필요했습니다.
+
+### Solution
+
+각 JSON 메시지 마지막에 newline을 추가했습니다.
+
+```cpp
+string data = message + '\n';
+
+boost::asio::write(
+    socket,
+    boost::asio::buffer(data)
+);
+```
+
+서버는 newline을 기준으로 하나의 JSON 메시지를 읽도록 구성했습니다.
 
 ```text
-traceBackward("FIN-001")
-
-SEMI-001
-RAW-001
-RAW-002
+JSON + \n
+JSON + \n
+JSON + \n
 ```
 
-### 정방향 추적
+### Learned
 
-원재료 LOT에서 시작하여 해당 원재료가 이후 어떤 반제품과 완제품 생산에 사용되었는지 추적합니다.
+TCP를 사용할 때 애플리케이션 계층에서 별도의 Message Framing 규칙을 정의해야 한다는 점을 확인했습니다.
+
+---
+
+## 3. Invalid JSON으로 인한 Collector 중단 방지
+
+### Problem
+
+네트워크 입력이 항상 정상적인 JSON이라는 보장은 없습니다.
+
+예를 들어 다음과 같은 메시지가 전달될 수 있습니다.
 
 ```text
-traceForward("RAW-001")
-
-SEMI-001
-FIN-001
+{ ABC
 ```
 
-다단계 LOT 관계는 재귀 탐색을 이용해 끝까지 추적합니다.
+하나의 잘못된 메시지 때문에 Collector 전체가 종료되면 이후 정상 Telemetry까지 처리할 수 없습니다.
+
+### Solution
+
+JSON Parsing 실패를 하나의 메시지 처리 실패로 제한하고 이후 메시지 처리를 계속하도록 구성했습니다.
+
+```text
+Normal Telemetry
+        ↓
+Invalid JSON
+        ↓
+Unknown Equipment
+        ↓
+Normal Telemetry
+        ↓
+High Temperature
+```
+
+잘못된 JSON 이후에도 다음 정상 Telemetry가 처리되는 것을 확인했습니다.
+
+### Learned
+
+장시간 실행되는 서버에서는 개별 요청 실패와 프로세스 전체 실패를 분리해야 한다는 점을 확인했습니다.
 
 ---
 
-## 10. 현재 진행률
+## 4. Unknown Equipment Validation
 
-- ✅ v0.1.0 설비 관리
-- ✅ v0.2.0 작업지시 관리
-- ✅ v0.3.0 생산실적 관리
-- ✅ v0.4.0 LOT 추적성 관리
-- ⬜ v0.5.0 설비 이상 알람
-- ⬜ v0.6.0 파일 저장 / 복구
-- ⬜ v0.7.0 TCP 통신
-- ⬜ v0.8.0 멀티스레드
-- ⬜ v0.9.0 PostgreSQL
-- ⬜ v1.0.0 REST API
+### Problem
 
----
+JSON 문법이 올바르더라도 시스템에 존재하지 않는 Equipment ID가 들어올 수 있습니다.
 
-## 11. 실행 방법
+```json
+{
+  "equipmentId": "M999"
+}
+```
 
-1. Visual Studio에서 `FactoryFlow.sln`을 엽니다.
-2. 프로젝트를 빌드합니다.
-3. 프로그램을 실행합니다.
-4. 콘솔 메뉴에서 원하는 기능을 선택합니다.
+### Solution
 
----
+JSON Parsing 이후 Equipment 존재 여부를 추가 검증합니다.
 
-## 12. 실행 화면
+```text
+JSON Parsing
+      ↓
+Equipment Validation
+      │
+      ├── Valid   → Process
+      │
+      └── Invalid → Reject
+```
 
-콘솔 실행 화면은 추후 추가할 예정입니다.
-
----
-
-## 13. 테스트
-
-### 설비 관리
-
-- 설비 등록
-- 설비 조회
-- 설비 상세 조회
-- 설비 상태 변경
-- 중복 설비 등록 방지
-- 잘못된 상태 전이 방지
-
-### 작업지시 관리
-
-- 작업지시 생성
-- 작업지시 조회
-- 설비 배정
-- 작업 시작
-- 작업 일시정지
-- 작업 재개
-- 작업 완료
-- 작업 취소
-- 설비 상태 연동
-- 설비 중복 배정 방지
-
-### 생산실적 관리
-
-- 생산 이벤트 등록
-- FIFO 이벤트 처리
-- 이벤트 한 건 처리
-- 이벤트 전체 처리
-- 작업지시 생산실적 누적
-- 설비 누적 생산실적 누적
-- 자동 작업 완료
-- 처리 이벤트 이력 저장
-- 거부 이벤트 이력 저장
-- 공장 전체 생산 현황 계산
-
-### LOT 추적성 관리
-
-- 원자재 / 반제품 / 완제품 LOT 등록
-- LOT 전체 및 상세 조회
-- 작업지시 기반 LOT 관계 생성
-- 다수 원재료 → 반제품 관계 생성
-- 반제품 → 완제품 관계 생성
-- 완제품 → 원재료 다단계 역추적
-- 원재료 → 완제품 다단계 정방향 추적
-- LOT 관계 정보 조회
-- 존재하지 않는 LOT 추적 시 빈 결과 반환
-
-### 예외 처리
-
-- 존재하지 않는 설비
-- 존재하지 않는 작업지시
-- 목표 수량 0
-- 중복 작업지시 ID
-- 존재하지 않는 생산 이벤트 대상
-- 생산 수량 0
-- 음수 생산량
-- 음수 불량량
-- 불량 수량 > 생산 수량
-- 목표 수량 초과
-- 빈 이벤트 큐 처리
-- 중복 LOT ID
-- 빈 LOT ID
-- 빈 품목 코드
-- LOT 수량 0
-- 존재하지 않는 Input LOT
-- 존재하지 않는 Output LOT
-- 존재하지 않는 WorkOrder를 이용한 LOT 관계 생성
-- 동일한 Input / Output LOT 관계 생성
-- 사용 수량 0
-- 설비가 배정되지 않은 작업지시를 이용한 LOT 관계 생성
-- 잘못된 메뉴 입력
-- 문자 입력 시 정수 재입력 처리
+이를 통해 **문법적으로 올바른 데이터와 시스템에서 처리 가능한 데이터를 별도로 검증**했습니다.
 
 ---
 
-## 14. 문제 해결
+## 5. 배포 환경에서 Frontend API 요청 실패
 
-### `cin >>` 이후 `getline()`이 빈 문자열을 읽는 문제
+### Problem
 
-`cin >>` 사용 후 입력 버퍼에 남아 있는 줄바꿈 문자 때문에 `getline()`이 즉시 종료되는 문제가 발생했습니다.
+로컬에서는 Dashboard와 REST API가 정상적으로 통신했지만 Vercel 배포 후 API 요청이 실패했습니다.
 
-`cin.ignore()`를 사용하여 입력 버퍼를 비워 해결했습니다.
+로컬과 배포 환경의 Backend 주소가 서로 달랐기 때문입니다.
 
-### 정수가 아닌 메뉴 입력 처리
+### Solution
 
-문자 입력 시 `cin`이 실패 상태가 되어 이후 입력도 처리되지 않는 문제가 있었습니다.
+API 주소를 코드에 직접 고정하지 않고 Vite 환경변수로 분리했습니다.
 
-`cin.clear()`와 `cin.ignore()`를 사용하여 오류 상태를 초기화하고 입력 버퍼를 비운 뒤 다시 입력받도록 구현했습니다.
+```text
+VITE_API_URL
+```
 
-### 생산 이벤트 즉시 반영 문제
+Frontend에서는 다음과 같이 참조합니다.
 
-생산실적을 즉시 반영하지 않고 FIFO 큐에 저장한 뒤 처리 시점에 다시 검증하도록 설계를 변경했습니다.
+```javascript
+import.meta.env.VITE_API_URL
+```
 
-이를 통해 처리 시점의 작업 상태 변화와 목표 수량 초과를 안전하게 처리할 수 있도록 구현했습니다.
+Vercel에도 배포용 환경변수를 등록한 뒤 재배포하여 실제 Backend API에 연결했습니다.
 
-### 다단계 LOT 추적
+### Learned
 
-LOT 관계가 여러 단계로 연결될 수 있기 때문에 단순 반복만으로 특정 LOT의 전체 선행·후행 관계를 추적하기 어렵습니다.
-
-`FactorySystem`에서 재귀 탐색을 사용하여 LOT 관계를 계속 따라가도록 구현하고, 이미 방문한 LOT를 별도로 관리하여 동일한 LOT를 반복 탐색하는 것을 방지했습니다.
-
----
-
-## 15. 향후 개선
-
-- 설비 이상 알람
-- 파일 저장 및 복구
-- TCP 통신
-- 멀티스레드
-- PostgreSQL 연동
-- REST API 구현
+환경별 설정값을 소스 코드와 분리해야 로컬/배포 환경 전환을 안정적으로 관리할 수 있다는 점을 확인했습니다.
 
 ---
 
-## 16. Version History
+## 6. CORS
 
-### v0.1.0
+### Problem
 
-- Equipment Management
+Frontend와 REST API가 각각 Vercel과 Railway에 배포되면서 서로 다른 Origin을 사용하게 되었습니다.
 
-### v0.2.0
+```text
+Vercel Frontend
+       │
+       │ HTTP Request
+       ▼
+Railway REST API
+```
 
-- Work Order Management
-- Equipment ↔ WorkOrder State Synchronization
-- Duplicate Equipment Assignment Prevention
+브라우저의 CORS 정책으로 인해 API 요청이 차단되었습니다.
 
-### v0.3.0
+### Solution
 
-#### 생산실적 관리
+REST API에서 배포된 Frontend Origin의 요청을 허용하도록 CORS 설정을 수정했습니다.
 
-- 생산 이벤트 등록
-- FIFO 생산 이벤트 큐
-- 이벤트 한 건 및 전체 처리
-- 작업지시별 생산·정상·불량 수량 관리
-- 설비별 누적 생산실적 관리
-- 작업 진행률 및 불량률 계산
-- 목표 수량 달성 시 자동 작업 완료
-- 정상 처리 및 거부 이벤트 이력 관리
-- 공장 전체 생산 현황 조회
+```text
+Vercel Dashboard
+       │
+       │ HTTPS / JSON
+       ▼
+Railway REST API
+       │
+       ▼
+PostgreSQL
+```
 
-### v0.4.0
+### Learned
 
-#### LOT Traceability
+Backend API 자체가 정상적으로 실행되는 것과 브라우저에서 해당 API에 접근할 수 있는 것은 별개의 문제이며, 실제 웹 배포에서는 Origin 정책까지 고려해야 한다는 점을 확인했습니다.
 
-- 원자재 / 반제품 / 완제품 LOT 등록
-- 작업지시 기반 LOT 생산 관계 기록
-- LOT 관계 조회
-- 완제품 → 원재료 역추적
-- 원재료 → 영향 제품 정방향 추적
-- 재귀 기반 다단계 LOT 탐색
+---
+
+# 🧪 Integration Test
+
+정상 데이터만 확인하지 않고 오류 상황을 포함한 End-to-End 데이터 처리 테스트를 진행했습니다.
+
+```text
+[1] Normal Telemetry
+        ↓
+[2] Invalid JSON
+        ↓
+[3] Unknown Equipment
+        ↓
+[4] Normal Telemetry
+        ↓
+[5] High Temperature Telemetry
+```
+
+검증 항목:
+
+- 정상 Telemetry Parsing
+- Invalid JSON 처리
+- Unknown Equipment 거부
+- 오류 발생 이후 Collector 지속 동작
+- Production 데이터 반영
+- High Temperature 감지
+- Alarm 생성
+- PostgreSQL 저장
+- REST API 조회
+- Dashboard 표시
+
+이를 통해 하나의 정상 요청만 처리하는 것이 아니라 **비정상 입력 이후에도 전체 데이터 파이프라인이 지속적으로 동작하는지** 확인했습니다.
+
+---
+
+# 🚀 Deployment
+
+| Component | Environment |
+|---|---|
+| Equipment Simulator | Local Client |
+| TCP Collector | Railway |
+| REST API | Railway |
+| PostgreSQL | Railway |
+| React Dashboard | Vercel |
+
+### Live Service
+
+👉 [FactoryFlow Dashboard](https://factory-flow-rlabd9i56-factoryflow1.vercel.app/)
+
+---
+
+# 📚 What I Learned
+
+FactoryFlow를 통해 다음 영역을 하나의 시스템으로 연결했습니다.
+
+- C++ 객체지향 도메인 설계
+- Equipment 상태 전이 검증
+- Work Order / Production / LOT 관리
+- 재귀 기반 LOT Traceability
+- TCP Client / Server 통신
+- TCP Stream Message Framing
+- DNS Resolution
+- JSON Serialization / Parsing
+- Network Input Validation
+- Production Event 처리
+- PostgreSQL Transaction
+- C++ REST API
+- Frontend / Backend API 연동
+- CORS
+- 환경변수 기반 설정 관리
+- CMake / Docker
+- Railway / Vercel 배포
+- Git / GitHub 버전 관리
+
+프로젝트를 통해 개별 기능 구현을 넘어,
+
+```text
+Equipment
+    ↓
+TCP
+    ↓
+Backend
+    ↓
+Database
+    ↓
+REST API
+    ↓
+Frontend
+```
+
+로 이어지는 **데이터의 전체 생명주기를 직접 설계하고 연결하는 경험**에 중점을 두었습니다.

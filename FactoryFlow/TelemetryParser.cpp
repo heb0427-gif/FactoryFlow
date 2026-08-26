@@ -1,5 +1,6 @@
 #include "TelemetryParser.h"
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 using json = nlohmann::json;
 using namespace std;
@@ -74,7 +75,8 @@ bool TelemetryParser::parse(const std::string& jsonText,
 		return true;
 	}
 	
-	catch (...) {
+	catch (const json::exception& e) {
+		cout << "JSON Parse Error: " << e.what() << '\n';
 		return false;
 	}
 }

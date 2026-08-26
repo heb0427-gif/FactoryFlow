@@ -26,7 +26,7 @@ int main() {
 	// ========================================
 	// 2. 테스트용 Equipment 등록
 	// ========================================
-
+	
 	if (!factorySystem.registerEquipment(
 		"M01",
 		"CNC Machine"

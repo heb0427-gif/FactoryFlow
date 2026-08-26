@@ -14,7 +14,7 @@ int main() {
 
 	cout << "Connecting...\n";
 
-	if (!client.connectToServer("127.0.0.1", 9000)) {
+	if (!client.connectToServer("altaria.proxy.rlwy.net", 53807)) {
 		cout << "Failed to connect to server.\n";
 		return 1;
 	}

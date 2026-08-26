@@ -13,6 +13,9 @@ using namespace std;
 
 int main() {
 
+	// Railway / Docker 환경에서 cout 로그를 즉시 출력
+	cout << unitbuf;
+
 	// ========================================
 	// 1. 기존 FactorySystem 준비
 	// ========================================

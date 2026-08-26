@@ -72,7 +72,7 @@ int main() {
 
 	cors
 		.global()
-		.origin("http://localhost:5173");
+		.origin("*");
 
 
 	// ========================================

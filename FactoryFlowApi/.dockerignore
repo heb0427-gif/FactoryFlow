@@ -1,0 +1,9 @@
+.vs
+x64
+Debug
+Release
+build
+.git
+*.user
+*.suo
+*.vcxproj.user

@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -41,7 +42,7 @@ int main() {
 		"PRODUCT-001",
 		100,
 		WorkOrderPriority::NORMAL
-	)) {
+		)) {
 		cout << "Failed to create work order.\n";
 		return 1;
 	}
@@ -79,31 +80,15 @@ int main() {
 	DatabaseManager databaseManager;
 
 	// 환경변수에서 PostgreSQL 비밀번호 읽기
-	char* dbPassword = nullptr;
-	size_t passwordLength = 0;
+	
+	const char* databaseUrl = std::getenv("DATABASE_URL");
 
-	_dupenv_s(
-		&dbPassword,
-		&passwordLength,
-		"FACTORYFLOW_DB_PASSWORD"
-	);
-
-	// 환경변수를 찾지 못한 경우
-	if (dbPassword == nullptr) {
-		cout << "Database password environment variable not found.\n";
+	if (databaseUrl == nullptr) {
+		cout << "DATABASE_URL environment variable not found.\n";
 		return 1;
 	}
 
-	// DB 연결 문자열 생성
-	string connectionString =
-		"host=127.0.0.1 "
-		"port=5432 "
-		"dbname=factoryflow "
-		"user=postgres "
-		"password=" + string(dbPassword);
-
-	// _dupenv_s가 할당한 메모리 해제
-	free(dbPassword);
+	string connectionString = databaseUrl;
 
 	if (!databaseManager.connect(connectionString)) {
 		cout << "Database connection failed.\n";
@@ -111,7 +96,6 @@ int main() {
 	}
 
 	cout << "Database connected.\n";
-
 
 	// ========================================
 	// 7. TelemetryProcessor 생성
@@ -136,97 +120,144 @@ int main() {
 
 	TcpServer server;
 
-	cout << "\nWaiting for client on port 9000...\n";
+
+	// ========================================
+	// TCP_PORT 환경변수 읽기
+	// ========================================
+
+	const char* tcpPortText = std::getenv("TCP_PORT");
+
+	if (tcpPortText == nullptr) {
+		cout << "TCP_PORT environment variable not found.\n";
+		return 1;
+	}
+
+
+	// 문자열 → 숫자 변환
+	unsigned short tcpPort;
+
+	try {
+		int port = stoi(tcpPortText);
+
+		if (port < 1 || port > 65535) {
+			cout << "Invalid TCP_PORT.\n";
+			return 1;
+		}
+
+		tcpPort = static_cast<unsigned short>(port);
+	}
+	catch (const exception&) {
+		cout << "Invalid TCP_PORT.\n";
+		return 1;
+	}
 
 
 	// ========================================
-	// 10. EquipmentSimulator 연결 기다리기
+	// TCP 서버 시작
 	// ========================================
 
-	if (!server.start(9000)) {
+	if (!server.start(tcpPort)) {
 		cout << "Failed to start TCP server.\n";
 		return 1;
 	}
 
-	cout << "Client connected.\n\n";
+	cout << "\nFactoryFlow TCP server started on port "
+		<< tcpPort << ".\n";
 
 
 	// ========================================
-	// 11. 같은 TCP 연결에서 JSON 3건 처리
+	// 11. 클라이언트 연결 반복 처리
 	// ========================================
 
-	for (int i = 1; i <= 3; i++) {
+	int messageCount = 0;
 
-		string jsonText;
+	while (true) {
 
+		cout << "\nWaiting for client...\n";
 
-		// ----------------------------------------
-		// 11-1. TCP로 JSON 문자열 수신
-		// ----------------------------------------
-
-		if (!server.receiveMessage(jsonText)) {
-			cout << "Failed to receive message.\n";
-			return 1;
-		}
-
-		cout << "[Received " << i << "]\n";
-		cout << jsonText << "\n";
-
-
-		// ----------------------------------------
-		// 11-2. JSON → TelemetryMessage 변환
-		// ----------------------------------------
-
-		TelemetryMessage message;
-
-		if (!parser.parse(jsonText, message)) {
-			cout << "Invalid telemetry message.\n\n";
-
-			// 잘못된 메시지 하나 때문에
-			// 서버 전체를 종료하지 않고 다음 메시지를 받음
+		// 새로운 EquipmentSimulator 접속 기다리기
+		if (!server.waitForClient()) {
+			cout << "Failed to accept client.\n";
 			continue;
 		}
 
+		cout << "Client connected.\n\n";
 
-		// ----------------------------------------
-		// 11-3. TelemetryMessage 실제 처리
-		// ----------------------------------------
 
-		if (!processor.process(message)) {
-			cout << "Failed to process telemetry.\n\n";
+		// ========================================
+		// 12. 현재 클라이언트의 메시지 계속 처리
+		// ========================================
 
-			// 처리 실패 역시 다음 메시지는 계속 받을 수 있게 함
-			continue;
+		while (true) {
+
+			string jsonText;
+
+			// ----------------------------------------
+			// 12-1. TCP JSON 수신
+			// ----------------------------------------
+
+			if (!server.receiveMessage(jsonText)) {
+
+				cout << "Waiting for next client...\n";
+
+				// 현재 Simulator가 종료된 것이므로
+				// 안쪽 while만 종료
+				break;
+			}
+
+			messageCount++;
+
+			cout << "[Received "
+				<< messageCount
+				<< "]\n";
+
+			cout << jsonText << "\n";
+
+
+			// ----------------------------------------
+			// 12-2. JSON → TelemetryMessage
+			// ----------------------------------------
+
+			TelemetryMessage message;
+
+			if (!parser.parse(jsonText, message)) {
+				cout << "Invalid telemetry message.\n\n";
+				continue;
+			}
+
+
+			// ----------------------------------------
+			// 12-3. 실제 FactoryFlow 처리
+			// ----------------------------------------
+
+			if (!processor.process(message)) {
+				cout << "Failed to process telemetry.\n\n";
+				continue;
+			}
+
+
+			// ----------------------------------------
+			// 12-4. 처리 성공
+			// ----------------------------------------
+
+			cout << "Telemetry processed.\n";
+
+			cout << "Equipment: "
+				<< message.getEquipmentId() << "\n";
+
+			cout << "Work Order: "
+				<< message.getWorkOrderId() << "\n";
+
+			cout << "Temperature: "
+				<< message.getTemperature() << "\n";
+
+			cout << "Production Count: "
+				<< message.getProductionCount() << "\n";
+
+			cout << "Defect Count: "
+				<< message.getDefectCount() << "\n\n";
 		}
-
-
-		// ----------------------------------------
-		// 11-4. 처리 성공
-		// ----------------------------------------
-
-		cout << "Telemetry processed.\n";
-		cout << "Equipment: "
-			<< message.getEquipmentId() << "\n";
-
-		cout << "Work Order: "
-			<< message.getWorkOrderId() << "\n";
-
-		cout << "Temperature: "
-			<< message.getTemperature() << "\n";
-
-		cout << "Production Count: "
-			<< message.getProductionCount() << "\n";
-
-		cout << "Defect Count: "
-			<< message.getDefectCount() << "\n\n";
 	}
-
-
-	// ========================================
-	// 12. 테스트 완료
-	// ========================================
-
-	cout << "All telemetry messages processed.\n";
 
 	return 0;
 }

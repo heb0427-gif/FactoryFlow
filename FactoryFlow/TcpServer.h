@@ -12,5 +12,6 @@ private:
 public:
 	TcpServer(); // 생성자
 	bool start(unsigned short port); // 지정한 포트에서 TCP 서버 시작
+	bool waitForClient();
 	bool receiveMessage(std::string& message); // 연결된 설비(client)에서 JSON 한 건을 읽음
 };

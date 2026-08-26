@@ -224,10 +224,18 @@ string DatabaseManager::getSummaryJson() {
 		)"
 	);
 
+	pqxx::result alarmResult = transaction.exec(
+		R"(
+		SELECT COUNT(*) AS alarm_count
+		FROM alarm;
+	)"
+	);
+
 	int equipmentCount = equipmentResult[0]["equipment_count"].as<int>();
 	int workOrderCount = workOrderResult[0]["work_order_count"].as<int>();
 	int totalProduced = workOrderResult[0]["total_produced"].as<int>();
 	int totalDefect = workOrderResult[0]["total_defect"].as<int>();
+	int alarmCount = alarmResult[0]["alarm_count"].as<int>();
 
 	double defectRate = 0.0;
 
@@ -241,7 +249,8 @@ string DatabaseManager::getSummaryJson() {
 		{"workOrderCount", workOrderCount},
 		{"totalProduced", totalProduced},
 		{"totalDefect", totalDefect},
-		{"defectRate", defectRate}
+		{"defectRate", defectRate},
+		{"alarmCount", alarmCount}
 	};
 
 	

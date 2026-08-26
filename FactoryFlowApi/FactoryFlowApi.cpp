@@ -1,7 +1,9 @@
-﻿#include <crow.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <crow.h>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <crow/middlewares/cors.h>
 
 #include "DatabaseManager.h"
 
@@ -15,28 +17,14 @@ int main() {
 
 	DatabaseManager databaseManager;
 
-	char* dbPassword = nullptr;
-	size_t passwordLength = 0;
+	const char* databaseUrl = std::getenv("DATABASE_URL");
 
-	_dupenv_s(
-		&dbPassword,
-		&passwordLength,
-		"FACTORYFLOW_DB_PASSWORD"
-	);
-
-	if (dbPassword == nullptr) {
-		cout << "Database password environment variable not found.\n";
+	if (databaseUrl == nullptr) {
+		cout << "DATABASE_URL environment variable not found.\n";
 		return 1;
 	}
 
-	string connectionString =
-		"host=127.0.0.1 "
-		"port=5432 "
-		"dbname=factoryflow "
-		"user=postgres "
-		"password=" + string(dbPassword);
-
-	free(dbPassword);
+	string connectionString = databaseUrl;
 
 	if (!databaseManager.connect(connectionString)) {
 		cout << "Database connection failed.\n";
@@ -47,10 +35,44 @@ int main() {
 
 
 	// ========================================
+	// PORT 환경변수 읽기
+	// ========================================
+
+	const char* portText = std::getenv("PORT");
+
+	if (portText == nullptr) {
+		cout << "PORT environment variable not found.\n";
+		return 1;
+	}
+
+	unsigned short port;
+
+	try {
+		int portNumber = stoi(portText);
+
+		if (portNumber < 1 || portNumber > 65535) {
+			cout << "Invalid PORT.\n";
+			return 1;
+		}
+
+		port = static_cast<unsigned short>(portNumber);
+	}
+	catch (const exception&) {
+		cout << "Invalid PORT.\n";
+		return 1;
+	}
+
+	// ========================================
 	// 2. Crow HTTP 서버 생성
 	// ========================================
 
-	crow::SimpleApp app;
+	crow::App<crow::CORSHandler> app;
+
+	auto& cors = app.get_middleware<crow::CORSHandler>();
+
+	cors
+		.global()
+		.origin("http://localhost:5173");
 
 
 	// ========================================
@@ -227,9 +249,9 @@ int main() {
 	// 9. HTTP 서버 실행
 	// ========================================
 
-	cout << "FactoryFlow API running on port 8080...\n";
+	cout << "FactoryFlow API running on port " << port << "...\n";
 
-	app.port(8080).run();
+	app.port(port).run();
 
 	return 0;
 }

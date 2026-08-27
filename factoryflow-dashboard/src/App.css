@@ -689,7 +689,7 @@
   .metric-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
+  } 
 
   .metric-card {
     padding: 16px;

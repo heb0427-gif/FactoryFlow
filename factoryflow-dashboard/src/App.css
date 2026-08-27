@@ -195,8 +195,13 @@
 }
 
 @keyframes pollingPulse {
-  from { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.12); }
-  to { box-shadow: 0 0 0 7px rgba(59, 130, 246, 0); }
+  from {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.12);
+  }
+
+  to {
+    box-shadow: 0 0 0 7px rgba(59, 130, 246, 0);
+  }
 }
 
 @property --polling-angle {
@@ -311,11 +316,30 @@
   font-weight: 800;
 }
 
-.metric-icon.green { color: var(--green-600); background: var(--green-100); }
-.metric-icon.red { color: var(--red-600); background: var(--red-100); }
-.metric-icon.purple { color: var(--purple-600); background: var(--purple-100); }
-.metric-icon.blue { color: var(--blue-600); background: var(--blue-100); }
-.metric-icon.orange { color: var(--orange-600); background: var(--orange-100); }
+.metric-icon.green {
+  color: var(--green-600);
+  background: var(--green-100);
+}
+
+.metric-icon.red {
+  color: var(--red-600);
+  background: var(--red-100);
+}
+
+.metric-icon.purple {
+  color: var(--purple-600);
+  background: var(--purple-100);
+}
+
+.metric-icon.blue {
+  color: var(--blue-600);
+  background: var(--blue-100);
+}
+
+.metric-icon.orange {
+  color: var(--orange-600);
+  background: var(--orange-100);
+}
 
 .metric-label {
   margin: 0;
@@ -492,24 +516,38 @@
   font-weight: 800;
 }
 
-.status-badge.running,
-.status-badge.ready,
-.status-badge.completed {
+/* RUNNING = green */
+.status-badge.running {
   color: #047857;
   background: #d1fae5;
 }
 
+/* READY = purple */
+.status-badge.ready {
+  color: #6d28d9;
+  background: #ede9fe;
+}
+
+/* COMPLETED = blue */
+.status-badge.completed {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+/* STOPPED / WAITING = gray */
 .status-badge.stopped,
 .status-badge.waiting {
   color: #475569;
   background: #e2e8f0;
 }
 
+/* PAUSED = yellow */
 .status-badge.paused {
   color: #b45309;
   background: #fef3c7;
 }
 
+/* ERROR / CANCELLED = red */
 .status-badge.error,
 .status-badge.cancelled {
   color: #b91c1c;

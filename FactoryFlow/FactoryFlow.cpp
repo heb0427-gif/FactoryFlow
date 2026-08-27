@@ -96,28 +96,28 @@ int main() {
 	// ========================================
 
 	if (!factorySystem.registerLot(
-		"LOT-001", "MATERIAL-STEEL", LotType::INPUT, 500) ||
+		"LOT-001", "MATERIAL-STEEL", LotType::RAW_MATERIAL, 500) ||
 
 		!factorySystem.registerLot(
-			"LOT-002", "MATERIAL-ALUMINUM", LotType::INPUT, 350) ||
+			"LOT-002", "MATERIAL-ALUMINUM", LotType::RAW_MATERIAL, 350) ||
 
 		!factorySystem.registerLot(
-			"LOT-003", "MATERIAL-COMPONENT", LotType::INPUT, 400) ||
+			"LOT-003", "MATERIAL-COMPONENT", LotType::RAW_MATERIAL, 400) ||
 
 		!factorySystem.registerLot(
-			"LOT-101", "PRODUCT-001", LotType::OUTPUT, 150) ||
+			"LOT-101", "PRODUCT-001", LotType::FINISHED, 150) ||
 
 		!factorySystem.registerLot(
-			"LOT-102", "PRODUCT-002", LotType::OUTPUT, 180) ||
+			"LOT-102", "PRODUCT-002", LotType::FINISHED, 180) ||
 
 		!factorySystem.registerLot(
-			"LOT-103", "PRODUCT-003", LotType::OUTPUT, 200) ||
+			"LOT-103", "PRODUCT-003", LotType::FINISHED, 200) ||
 
 		!factorySystem.registerLot(
-			"LOT-104", "PRODUCT-004", LotType::OUTPUT, 120) ||
+			"LOT-104", "PRODUCT-004", LotType::FINISHED, 120) ||
 
 		!factorySystem.registerLot(
-			"LOT-105", "PRODUCT-005", LotType::OUTPUT, 160)) {
+			"LOT-105", "PRODUCT-005", LotType::FINISHED, 160)) {
 
 		cout << "Failed to register lots.\n";
 		return 1;

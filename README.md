@@ -12,7 +12,7 @@ FactoryFlow는 제조 설비에서 발생하는 Telemetry 데이터를 **TCP 통
 
 ### 🔗 Live Demo
 
-[FactoryFlow Dashboard](https://factory-flow-rlabd9i56-factoryflow1.vercel.app/)
+[FactoryFlow Dashboard](https://factory-flow-three.vercel.app/)
 
 ---
 
@@ -662,7 +662,7 @@ Backend API 자체가 정상적으로 실행되는 것과 브라우저에서 해
 
 ### Live Service
 
-👉 [FactoryFlow Dashboard](https://factory-flow-rlabd9i56-factoryflow1.vercel.app/)
+👉 [FactoryFlow Dashboard](https://factory-flow-three.vercel.app/)
 
 ---
 
